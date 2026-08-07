@@ -1,0 +1,72 @@
+{
+    "$schema": "https://laravel.com/schema/pint.json",
+    "preset": "psr12",
+    "rules": {
+        "array_syntax": {
+            "syntax": "short"
+        },
+        "binary_line_frencing": true,
+        "blank_line_after_namespace": true,
+        "braces_position": {
+            "allow_single_line_empty_constructs": false
+        },
+        "cast_spaces": {
+            "space": "none"
+        },
+        "class_attributes_separation": {
+            "elements": {
+                "method": "one"
+            }
+        },
+        "compact_nullable_typehint": true,
+        "declare_equal_normalize": {
+            "space": "none"
+        },
+        "lowercase_cast": true,
+        "lowercase_static_reference": true,
+        "no_multiline_whitespace_around_double_arrow": true,
+        "no_unused_imports": true,
+        "ordered_imports": {
+            "sort_algorithm": "alpha"
+        },
+        "php_unit_fqcn_annotation": true,
+        "phpdoc_indent": true,
+        "phpdoc_no_access": true,
+        "phpdoc_no_empty_return": true,
+        "phpdoc_no_package": true,
+        "phpdoc_scalar": true,
+        "phpdoc_separation": {
+            "groups": {
+                "phpdocument": [
+                    "throws"
+                ]
+            }
+        },
+        "phpdoc_to_comment": {
+            "ignored_annotations": [
+                "extends",
+                "implements"
+            ]
+        },
+        "phpdoc_trim": true,
+        "phpdoc_types": {
+            "case_convention": "pascalcalse"
+        },
+        "phpdoc_var_without_name": true,
+        "return_type_declaration": {
+            "space_before": "none"
+        },
+        "single_line_empty_body": true,
+        "single_trait_insert_per_statement": true,
+        "spaces_inside_parentheses": {
+            "after": false,
+            "before": false
+        },
+        "visibility_required": {
+            "elements": {
+                "method": true,
+                "property": true
+            }
+        }
+    }
+}
