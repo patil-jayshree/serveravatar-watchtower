@@ -51,14 +51,14 @@ class VerifyEmail extends Notification implements ShouldQueue
     /**
      * Get the verification URL.
      */
-    public function verificationUrl(): string
+    public function verificationUrl(object $notifiable): string
     {
         return URL::temporarySignedRoute(
             'verification.verify',
             now()->addMinutes(60),
             [
-                'id' => $this->notifiable->getKey(),
-                'hash' => sha1($this->notifiable->getEmailForVerification()),
+                'id' => $notifiable->getKey(),
+                'hash' => sha1($notifiable->getEmailForVerification()),
             ]
         );
     }
@@ -72,7 +72,7 @@ class VerifyEmail extends Notification implements ShouldQueue
             ->subject($this->subject())
             ->greeting($this->greeting())
             ->line('Thank you for registering with ServerAvatar Watchtower. Please verify your email address by clicking the button below.')
-            ->action('Verify Email Address', $this->verificationUrl())
+            ->action('Verify Email Address', $this->verificationUrl($notifiable))
             ->line('This verification link will expire in 60 minutes.')
             ->line('If you did not create an account, no further action is required.');
     }

@@ -41,6 +41,29 @@ Route::middleware(['auth'])->group(function () {
     // Dashboard (verified middleware disabled for development)
     // TODO: Add 'verified' middleware for production
     Route::get('/dashboard', [DashboardController::class, 'show'])->name('dashboard');
+
+    // Settings
+    Route::get('/settings', [\App\Http\Controllers\Settings\SettingsController::class, 'index'])->name('settings.index');
+    Route::prefix('settings')->name('settings.')->group(function () {
+        // Profile
+        Route::get('/profile', [\App\Http\Controllers\Settings\ProfileController::class, 'edit'])->name('profile');
+        Route::put('/profile', [\App\Http\Controllers\Settings\ProfileController::class, 'update'])->name('profile.update');
+        Route::post('/avatar', [\App\Http\Controllers\Settings\ProfileController::class, 'uploadAvatar'])->name('avatar.upload');
+        Route::delete('/avatar', [\App\Http\Controllers\Settings\ProfileController::class, 'removeAvatar'])->name('avatar.remove');
+
+        // Security
+        Route::get('/security', [\App\Http\Controllers\Settings\SecurityController::class, 'edit'])->name('security');
+        Route::put('/security', [\App\Http\Controllers\Settings\SecurityController::class, 'update'])->name('security.update');
+
+        // Preferences
+        Route::get('/preferences', [\App\Http\Controllers\Settings\PreferencesController::class, 'edit'])->name('preferences');
+        Route::put('/preferences', [\App\Http\Controllers\Settings\PreferencesController::class, 'update'])->name('preferences.update');
+
+        // Sessions
+        Route::get('/sessions', [\App\Http\Controllers\Settings\SessionController::class, 'index'])->name('sessions');
+        Route::delete('/sessions/{sessionId}', [\App\Http\Controllers\Settings\SessionController::class, 'destroy'])->name('sessions.revoke');
+        Route::post('/sessions/revoke-all', [\App\Http\Controllers\Settings\SessionController::class, 'revokeAll'])->name('sessions.revoke-all');
+    });
 });
 
 // Email Verification Routes

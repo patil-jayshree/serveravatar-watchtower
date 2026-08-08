@@ -14,7 +14,7 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 
-#[Fillable(['name', 'email', 'password', 'avatar', 'timezone', 'locale'])]
+#[Fillable(['name', 'email', 'password', 'avatar_path', 'timezone', 'locale', 'theme_preference'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -33,6 +33,25 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
             'status' => UserStatus::class,
         ];
+    }
+
+    /**
+     * Get the avatar URL.
+     */
+    public function getAvatarUrlAttribute(): ?string
+    {
+        if ($this->avatar_path) {
+            return asset('storage/avatars/' . $this->avatar_path);
+        }
+        return null;
+    }
+
+    /**
+     * Get the default avatar URL.
+     */
+    public function getDefaultAvatarUrlAttribute(): string
+    {
+        return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&background=0891b2&color=fff&size=128';
     }
 
     /**
