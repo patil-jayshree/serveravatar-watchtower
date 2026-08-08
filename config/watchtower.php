@@ -11,6 +11,13 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Short Name
+    |--------------------------------------------------------------------------
+    */
+    'short_name' => env('APP_SHORT_NAME', 'Watchtower'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Version
     |--------------------------------------------------------------------------
     */
@@ -36,5 +43,61 @@ return [
     |--------------------------------------------------------------------------
     */
     'support_email' => env('SUPPORT_EMAIL', 'support@serveravatar.com'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Branding
+    |--------------------------------------------------------------------------
+    */
+    'branding' => [
+        // Browser Title
+        'browser_title' => 'ServerAvatar Watchtower — Monitor. Debug. Ship.',
+
+        // Meta Tags
+        'meta' => [
+            'title' => 'ServerAvatar Watchtower — Monitor. Debug. Ship.',
+            'description' => 'A powerful observability platform for modern development teams. Monitor requests, track exceptions, analyze database queries, and gain AI-powered insights.',
+            'keywords' => 'monitoring, observability, error tracking, performance, debugging, developer tools, SaaS',
+        ],
+
+        // OpenGraph
+        'og' => [
+            'title' => 'ServerAvatar Watchtower',
+            'description' => 'A powerful observability platform for modern development teams.',
+            'type' => 'website',
+            'image' => '/og-image.png',
+        ],
+
+        // Twitter Card
+        'twitter' => [
+            'card' => 'summary_large_image',
+            'site' => '@serveravatar',
+            'creator' => '@serveravatar',
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Logo URLs
+    |--------------------------------------------------------------------------
+    */
+    'logos' => [
+        'dark' => '/logos/brand-logo.png',
+        'light' => '/logos/brand-logo.png',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Footer
+    |--------------------------------------------------------------------------
+    */
+    'footer' => [
+        'copyright' => '© 2026 ServerAvatar Watchtower. All rights reserved.',
+        'links' => [
+            'documentation' => false,
+            'privacy' => false,
+            'terms' => false,
+        ],
+    ],
 
 ];
