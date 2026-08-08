@@ -13,6 +13,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable(['name', 'email', 'password', 'avatar_path', 'timezone', 'locale', 'theme_preference'])]
 #[Hidden(['password', 'remember_token'])]
@@ -41,7 +42,7 @@ class User extends Authenticatable implements MustVerifyEmail
     public function getAvatarUrlAttribute(): ?string
     {
         if ($this->avatar_path) {
-            return asset('storage/avatars/' . $this->avatar_path);
+            return asset('avatars/' . $this->avatar_path);
         }
         return null;
     }
@@ -96,5 +97,29 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->forceFill([
             'email_verified_at' => now(),
         ])->save();
+    }
+
+    /**
+     * Get the user's organization memberships.
+     */
+    public function organizationMemberships(): HasMany
+    {
+        return $this->hasMany(OrganizationMembership::class);
+    }
+
+    /**
+     * Get the user's organizations.
+     */
+    public function organizations(): HasMany
+    {
+        return $this->hasMany(Organization::class);
+    }
+
+    /**
+     * Get the organizations the user belongs to.
+     */
+    public function memberOf(): HasMany
+    {
+        return $this->hasMany(OrganizationMembership::class)->with('organization');
     }
 }

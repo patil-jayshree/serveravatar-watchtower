@@ -20,6 +20,7 @@ class PreferencesController extends Controller
         
         return view('settings.preferences', [
             'timezones' => $timezones,
+            'user' => Auth::user(),
         ]);
     }
 

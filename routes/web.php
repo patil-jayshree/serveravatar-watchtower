@@ -4,6 +4,11 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\VerificationController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Organization\OrganizationController;
+use App\Http\Controllers\Organization\OrganizationMemberController;
+use App\Http\Controllers\Organization\OrganizationSettingsController;
+use App\Http\Controllers\Organization\SwitchOrganizationController;
+use App\Http\Middleware\LoadCurrentOrganization;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -41,6 +46,28 @@ Route::middleware(['auth'])->group(function () {
     // Dashboard (verified middleware disabled for development)
     // TODO: Add 'verified' middleware for production
     Route::get('/dashboard', [DashboardController::class, 'show'])->name('dashboard');
+
+    // Organization Routes - MUST define literal routes BEFORE {organization} wildcard
+    Route::get('/organizations/create', [OrganizationController::class, 'create'])->name('organizations.create');
+    Route::post('/organizations', [OrganizationController::class, 'store'])->name('organizations.store');
+    Route::get('/organizations', [OrganizationController::class, 'index'])->name('organizations.index');
+    Route::post('/organizations/switch/{organization}', [SwitchOrganizationController::class, 'switch'])->name('organizations.switch');
+
+    // Organization Routes with {organization} parameter (must come after literal routes)
+    Route::middleware([LoadCurrentOrganization::class])->prefix('organizations/{organization}')->name('organizations.')->group(function () {
+        // Overview
+        Route::get('/', [OrganizationController::class, 'show'])->name('show');
+
+        // Members
+        Route::get('/members', [OrganizationMemberController::class, 'index'])->name('members.index');
+        Route::post('/members', [OrganizationMemberController::class, 'store'])->name('members.store');
+        Route::delete('/members/{user}', [OrganizationMemberController::class, 'destroy'])->name('members.destroy');
+        Route::put('/members/{user}', [OrganizationMemberController::class, 'update'])->name('members.update');
+
+        // Settings
+        Route::get('/settings', [OrganizationSettingsController::class, 'edit'])->name('settings');
+        Route::put('/settings', [OrganizationSettingsController::class, 'update'])->name('settings.update');
+    });
 
     // Settings
     Route::get('/settings', [\App\Http\Controllers\Settings\SettingsController::class, 'index'])->name('settings.index');
