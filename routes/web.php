@@ -1,16 +1,15 @@
 <?php
 
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\Auth\PasswordController;
+use App\Http\Controllers\Auth\VerificationController;
+use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application.
-| These routes are loaded by the RouteServiceProvider and all of them
-| will be assigned to the "web" middleware group.
-|
 */
 
 // Landing Page
@@ -18,13 +17,49 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
-// Auth Placeholder Routes (Phase 2)
+// Guest Routes (unauthenticated users only)
 Route::middleware('guest')->group(function () {
-    Route::get('/login', function () {
-        return view('welcome'); // Placeholder
-    })->name('login');
+    // Login
+    Route::get('/login', [AuthenticatedSessionController::class, 'create'])->name('login');
+    Route::post('/login', [AuthenticatedSessionController::class, 'store'])->name('login.store');
 
-    Route::get('/register', function () {
-        return view('welcome'); // Placeholder
-    })->name('register');
+    // Register
+    Route::get('/register', [AuthenticatedSessionController::class, 'registerCreate'])->name('register');
+    Route::post('/register', [AuthenticatedSessionController::class, 'registerStore'])->name('register.store');
+
+    // Forgot Password
+    Route::get('/forgot-password', [PasswordController::class, 'create'])->name('password.request');
+    Route::post('/forgot-password', [PasswordController::class, 'store'])->name('password.email');
+
+    // Reset Password
+    Route::get('/reset-password/{token}', [PasswordController::class, 'edit'])->name('password.reset');
+    Route::post('/reset-password', [PasswordController::class, 'update'])->name('password.update');
+})->middleware('throttle:5,1');
+
+// Authenticated Routes
+Route::middleware(['auth'])->group(function () {
+    // Dashboard (verified middleware disabled for development)
+    // TODO: Add 'verified' middleware for production
+    Route::get('/dashboard', [DashboardController::class, 'show'])->name('dashboard');
+});
+
+// Email Verification Routes
+Route::middleware('auth')->group(function () {
+    // Verification Notice (prompt user to verify)
+    Route::get('/email/verify', [VerificationController::class, 'notice'])->name('verification.notice');
+
+    // Verify Email (click link from email)
+    Route::get('/email/verify/{id}/{hash}', [VerificationController::class, 'verify'])
+        ->name('verification.verify')
+        ->middleware(['signed']);
+
+    // Resend Verification Email
+    Route::post('/email/verification-notification', [VerificationController::class, 'resend'])
+        ->name('verification.send')
+        ->middleware('throttle:3,1');
+});
+
+// Logout (must be logged in to logout)
+Route::middleware('auth')->group(function () {
+    Route::post('/logout', [AuthenticatedSessionController::class, 'destroy'])->name('logout');
 });
