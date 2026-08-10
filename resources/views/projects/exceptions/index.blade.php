@@ -125,7 +125,6 @@
                     <option value="custom" {{ ($filters['time_range'] ?? '') === 'custom' ? 'selected' : '' }}>Custom</option>
                 </select>
             </div>
-        </div>
 
         <!-- Custom Date Range (shown when Custom is selected) -->
         <div id="customDateRange" class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4" style="display: none;">
