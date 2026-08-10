@@ -9,6 +9,7 @@ use App\Models\ExceptionGroup;
 use App\Models\Organization;
 use App\Models\Project;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 
@@ -154,7 +155,7 @@ class ExceptionGroupController extends Controller
         ]);
     }
 
-    public function updateStatus(Request $request, Organization $organization, Project $project, string $uuid): Response
+    public function updateStatus(Request $request, Organization $organization, Project $project, string $uuid): JsonResponse
     {
         if ($project->organization->user_id !== Auth::id()) {
             abort(403);
