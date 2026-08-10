@@ -22,8 +22,8 @@ class LoadCurrentOrganization
             $organization = Organization::findOrFail($organizationId);
         }
 
-        // Check if user belongs to this organization
-        if (! $organization->hasMember(Auth::user())) {
+        // Check if user owns this organization
+        if ($organization->user_id !== Auth::id()) {
             abort(403, 'You do not have access to this organization.');
         }
 

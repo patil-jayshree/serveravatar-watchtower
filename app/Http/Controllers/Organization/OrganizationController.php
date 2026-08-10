@@ -17,8 +17,7 @@ class OrganizationController extends Controller
      */
     public function index(): View
     {
-        $user = Auth::user();
-        $organizations = $user->memberOf()->with('organization')->get()->pluck('organization');
+        $organizations = Auth::user()->organizations()->get();
 
         return view('organizations.index', [
             'organizations' => $organizations,

@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Organization\UpdateOrganizationRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class OrganizationSettingsController extends Controller
@@ -34,6 +35,11 @@ class OrganizationSettingsController extends Controller
 
         // Check if this is a delete request
         if ($request->has('delete')) {
+            // Only the owner can delete
+            if ($organization->user_id !== Auth::id()) {
+                abort(403, 'You do not have permission to delete this organization.');
+            }
+
             $deleteAction->execute($organization);
 
             return redirect()->route('organizations.index')->with('status', 'Organization deleted successfully.');

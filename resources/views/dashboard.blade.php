@@ -13,7 +13,7 @@
             <div class="flex items-center gap-4">
                 {{-- Organization Switcher --}}
                 @php
-                    $organizations = $user->memberOf()->with('organization')->get()->pluck('organization');
+                    $organizations = $user->organizations()->get();
                     $selectedOrg = session('selected_organization_id') ? \App\Models\Organization::find(session('selected_organization_id')) : null;
                 @endphp
                 @if($organizations->count() > 0)
@@ -29,9 +29,6 @@
                         <div x-show="open" x-cloak class="absolute right-0 mt-2 w-64 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
                             <div class="p-2">
                                 @foreach($organizations as $org)
-                                    @php
-                                        $membership = $user->memberOf()->where('organization_id', $org->id)->first();
-                                    @endphp
                                     <form method="POST" action="{{ route('organizations.switch', $org) }}">
                                         @csrf
                                         <button type="submit" class="w-full flex items-center justify-between px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 {{ session('selected_organization_id') == $org->id ? 'bg-primary-50 dark:bg-primary-900/20' : '' }}">
@@ -43,7 +40,6 @@
                                                 @endif
                                                 <div class="text-left">
                                                     <p class="text-sm font-medium text-gray-900 dark:text-white">{{ $org->name }}</p>
-                                                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ $membership->role->label() }}</p>
                                                 </div>
                                             </div>
                                             @if(session('selected_organization_id') == $org->id)

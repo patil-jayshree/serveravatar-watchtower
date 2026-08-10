@@ -16,19 +16,18 @@ class SwitchOrganizationController extends Controller
     {
         $user = Auth::user();
 
-        // Check if user belongs to this organization
-        $membership = $user->memberOf()
-            ->where('organization_id', $organizationId)
-            ->first();
+        // Find the organization
+        $organization = \App\Models\Organization::findOrFail($organizationId);
 
-        if (! $membership) {
-            return redirect()->back()->with('error', 'You do not belong to this organization.');
+        // Check if user owns this organization
+        if ($organization->user_id !== $user->id) {
+            return redirect()->back()->with('error', 'You do not own this organization.');
         }
 
         // Store the selected organization ID in session
-        session(['selected_organization_id' => $organizationId]);
+        session(['selected_organization_id' => $organization->id]);
 
-        return redirect()->route('organizations.show', $organizationId);
+        return redirect()->route('organizations.show', $organization);
     }
 
     /**
@@ -44,13 +43,11 @@ class SwitchOrganizationController extends Controller
      */
     public static function selectDefaultOrganization(int $userId): ?int
     {
-        $membership = \App\Models\OrganizationMembership::where('user_id', $userId)
-            ->orderBy('role')
-            ->first();
+        $organization = \App\Models\Organization::where('user_id', $userId)->first();
 
-        if ($membership) {
-            session(['selected_organization_id' => $membership->organization_id]);
-            return $membership->organization_id;
+        if ($organization) {
+            session(['selected_organization_id' => $organization->id]);
+            return $organization->id;
         }
 
         return null;

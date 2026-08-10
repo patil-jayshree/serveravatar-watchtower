@@ -2,7 +2,6 @@
 
 namespace App\Policies;
 
-use App\Enums\OrganizationRole;
 use App\Models\Organization;
 use App\Models\User;
 
@@ -21,7 +20,7 @@ class OrganizationPolicy
      */
     public function view(User $user, Organization $organization): bool
     {
-        return $organization->hasMember($user);
+        return $organization->user_id === $user->id;
     }
 
     /**
@@ -37,7 +36,7 @@ class OrganizationPolicy
      */
     public function update(User $user, Organization $organization): bool
     {
-        return $organization->userHasRole($user, OrganizationRole::Admin);
+        return $organization->user_id === $user->id;
     }
 
     /**
@@ -45,38 +44,6 @@ class OrganizationPolicy
      */
     public function delete(User $user, Organization $organization): bool
     {
-        return $organization->userHasRole($user, OrganizationRole::Owner);
-    }
-
-    /**
-     * Determine whether the user can manage members.
-     */
-    public function manageMembers(User $user, Organization $organization): bool
-    {
-        return $organization->userHasRole($user, OrganizationRole::Admin);
-    }
-
-    /**
-     * Determine whether the user can update member roles.
-     */
-    public function updateMemberRole(User $user, Organization $organization): bool
-    {
-        return $organization->userHasRole($user, OrganizationRole::Admin);
-    }
-
-    /**
-     * Determine whether the user can remove members.
-     */
-    public function removeMember(User $user, Organization $organization): bool
-    {
-        return $organization->userHasRole($user, OrganizationRole::Admin);
-    }
-
-    /**
-     * Determine whether the user can add members.
-     */
-    public function addMember(User $user, Organization $organization): bool
-    {
-        return $organization->userHasRole($user, OrganizationRole::Admin);
+        return $organization->user_id === $user->id;
     }
 }

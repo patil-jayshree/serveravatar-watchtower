@@ -58,12 +58,6 @@ Route::middleware(['auth'])->group(function () {
         // Overview
         Route::get('/', [OrganizationController::class, 'show'])->name('show');
 
-        // Members
-        Route::get('/members', [OrganizationMemberController::class, 'index'])->name('members.index');
-        Route::post('/members', [OrganizationMemberController::class, 'store'])->name('members.store');
-        Route::delete('/members/{user}', [OrganizationMemberController::class, 'destroy'])->name('members.destroy');
-        Route::put('/members/{user}', [OrganizationMemberController::class, 'update'])->name('members.update');
-
         // Settings
         Route::get('/settings', [OrganizationSettingsController::class, 'edit'])->name('settings');
         Route::put('/settings', [OrganizationSettingsController::class, 'update'])->name('settings.update');

@@ -2,12 +2,9 @@
 
 namespace App\Models;
 
-use App\Enums\OrganizationRole;
-use App\Enums\OrganizationStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 class Organization extends Model
@@ -19,26 +16,12 @@ class Organization extends Model
      *
      * @var array<int, string>
      */
-    #[Fillable(['name', 'slug', 'logo_path', 'owner_id', 'status'])]
+    #[Fillable(['name', 'logo_path', 'user_id'])]
     protected $fillable = [
         'name',
-        'slug',
         'logo_path',
-        'owner_id',
-        'status',
+        'user_id',
     ];
-
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'status' => OrganizationStatus::class,
-        ];
-    }
 
     /**
      * Boot the model.
@@ -48,57 +31,38 @@ class Organization extends Model
         parent::boot();
 
         static::creating(function (Organization $organization) {
-            if (empty($organization->slug)) {
-                $organization->slug = static::generateUniqueSlug($organization->name);
-            }
-        });
-
-        static::updating(function (Organization $organization) {
-            if ($organization->isDirty('name') && ! $organization->isDirty('slug')) {
-                $organization->slug = static::generateUniqueSlug($organization->name);
+            if (empty($organization->uuid)) {
+                $organization->uuid = static::generateUniqueUuid();
             }
         });
     }
 
     /**
-     * Generate a unique slug from the name.
+     * Generate a unique public UUID.
      */
-    public static function generateUniqueSlug(string $name): string
+    public static function generateUniqueUuid(): string
     {
-        $slug = Str::slug($name);
-        $originalSlug = $slug;
-        $counter = 1;
+        do {
+            $uuid = Str::uuid()->toString();
+        } while (static::where('uuid', $uuid)->exists());
 
-        while (static::where('slug', $slug)->exists()) {
-            $slug = $originalSlug . '-' . $counter;
-            $counter++;
-        }
-
-        return $slug;
+        return $uuid;
     }
 
     /**
      * Get the owner of the organization.
      */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Alias for user() - the owner of the organization.
+     */
     public function owner(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'owner_id');
-    }
-
-    /**
-     * Get the organization memberships.
-     */
-    public function memberships(): HasMany
-    {
-        return $this->hasMany(OrganizationMembership::class);
-    }
-
-    /**
-     * Get the organization members.
-     */
-    public function members(): HasMany
-    {
-        return $this->hasMany(User::class)->through('memberships');
+        return $this->user();
     }
 
     /**
@@ -122,46 +86,10 @@ class Organization extends Model
     }
 
     /**
-     * Check if a user is a member of this organization.
+     * Check if a given user is the owner of this organization.
      */
-    public function hasMember(User $user): bool
+    public function isOwnedBy(User $user): bool
     {
-        return $this->memberships()->where('user_id', $user->id)->exists();
-    }
-
-    /**
-     * Get a user's role in this organization.
-     */
-    public function getMemberRole(User $user): ?OrganizationRole
-    {
-        $membership = $this->memberships()->where('user_id', $user->id)->first();
-
-        return $membership?->role;
-    }
-
-    /**
-     * Check if a user has a specific role or higher.
-     */
-    public function userHasRole(User $user, OrganizationRole $role): bool
-    {
-        $userRole = $this->getMemberRole($user);
-
-        if (! $userRole) {
-            return false;
-        }
-
-        return match ($role) {
-            OrganizationRole::Owner => $userRole === OrganizationRole::Owner,
-            OrganizationRole::Admin => in_array($userRole, [OrganizationRole::Owner, OrganizationRole::Admin]),
-            OrganizationRole::Member => true,
-        };
-    }
-
-    /**
-     * Get the member count.
-     */
-    public function getMemberCountAttribute(): int
-    {
-        return $this->memberships()->count();
+        return $this->user_id === $user->id;
     }
 }

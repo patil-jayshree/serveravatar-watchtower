@@ -46,26 +46,9 @@
                                 @endif
                                 <div class="flex-1 min-w-0">
                                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white truncate">{{ $organization->name }}</h3>
-                                    <p class="text-sm text-gray-500 dark:text-gray-400">{{ $organization->member_count }} member{{ $organization->member_count !== 1 ? 's' : '' }}</p>
+                                    <p class="text-sm text-gray-500 dark:text-gray-400">0 projects</p>
                                 </div>
                             </div>
-
-                            {{-- Role Badge --}}
-                            @php
-                                $membership = Auth::user()->memberOf()->where('organization_id', $organization->id)->first();
-                            @endphp
-                            @if($membership)
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                    @if($membership->role->value === 'owner')
-                                        bg-primary-100 dark:bg-primary-900 text-primary-800 dark:text-primary-200
-                                    @elseif($membership->role->value === 'admin')
-                                        bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200
-                                    @else
-                                        bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200
-                                    @endif">
-                                    {{ $membership->role->label() }}
-                                </span>
-                            @endif
                         </div>
 
                         {{-- Actions --}}
@@ -73,11 +56,9 @@
                             <a href="{{ route('organizations.show', $organization) }}" class="text-sm font-medium text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300">
                                 Open →
                             </a>
-                            @if($membership && $membership->role->canManageSettings())
-                                <a href="{{ route('organizations.settings', $organization) }}" class="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
-                                    Settings
-                                </a>
-                            @endif
+                            <a href="{{ route('organizations.settings', $organization) }}" class="text-sm font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
+                                Settings
+                            </a>
                         </div>
                     </div>
                 @endforeach

@@ -104,32 +104,27 @@
         </div>
 
         {{-- Danger Zone --}}
-        @php
-            $currentMembership = Auth::user()->memberOf()->where('organization_id', $organization->id)->first();
-        @endphp
-        @if($currentMembership && $currentMembership->role->canDelete())
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-red-200 dark:border-red-800">
-                <div class="px-6 py-5 border-b border-red-200 dark:border-red-800">
-                    <h3 class="text-lg font-semibold text-red-600 dark:text-red-400">Danger Zone</h3>
-                </div>
-                <div class="p-6">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <p class="text-sm font-medium text-gray-900 dark:text-white">Delete Organization</p>
-                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Once you delete an organization, there is no going back.</p>
-                        </div>
-                        <form method="POST" action="{{ route('organizations.settings.update', $organization) }}" onsubmit="return confirm('Are you sure you want to delete this organization? This action cannot be undone.');">
-                            @csrf
-                            @method('PUT')
-                            <input type="hidden" name="delete" value="1">
-                            <button type="submit" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
-                                Delete Organization
-                            </button>
-                        </form>
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-red-200 dark:border-red-800">
+            <div class="px-6 py-5 border-b border-red-200 dark:border-red-800">
+                <h3 class="text-lg font-semibold text-red-600 dark:text-red-400">Danger Zone</h3>
+            </div>
+            <div class="p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-gray-900 dark:text-white">Delete Organization</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Once you delete an organization, there is no going back.</p>
                     </div>
+                    <form method="POST" action="{{ route('organizations.settings.update', $organization) }}" onsubmit="return confirm('Are you sure you want to delete this organization? This action cannot be undone.');">
+                        @csrf
+                        @method('PUT')
+                        <input type="hidden" name="delete" value="1">
+                        <button type="submit" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+                            Delete Organization
+                        </button>
+                    </form>
                 </div>
             </div>
-        @endif
+        </div>
     </div>
 </div>
 @endsection

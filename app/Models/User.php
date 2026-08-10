@@ -115,11 +115,4 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->hasMany(Organization::class);
     }
 
-    /**
-     * Get the organizations the user belongs to.
-     */
-    public function memberOf(): HasMany
-    {
-        return $this->hasMany(OrganizationMembership::class)->with('organization');
-    }
 }
