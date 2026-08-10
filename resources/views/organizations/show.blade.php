@@ -41,12 +41,12 @@
 
         {{-- Quick Actions --}}
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            {{-- Projects Card (Coming Soon) --}}
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 opacity-75">
+            {{-- Projects Card --}}
+            <a href="{{ route('organizations.projects.index', $organization) }}" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:border-primary-300 dark:hover:border-primary-700 transition-colors duration-200">
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm text-gray-500 dark:text-gray-400">Projects</p>
-                        <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">0</p>
+                        <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ $organization->projects()->count() }}</p>
                     </div>
                     <div class="p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
                         <svg class="w-6 h-6 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -54,8 +54,8 @@
                         </svg>
                     </div>
                 </div>
-                <p class="mt-4 text-xs text-gray-400 dark:text-gray-500">Coming in next phase</p>
-            </div>
+                <p class="mt-4 text-xs text-primary-600 dark:text-primary-400">View all projects →</p>
+            </a>
 
             {{-- Created Date --}}
             <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
