@@ -86,9 +86,37 @@
                     </div>
                     <div class="flex-1">
                         <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Install the Agent</h2>
-                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Run this command in your Laravel application root:</p>
-                        <div class="bg-gray-900 dark:bg-gray-700 rounded-lg p-4 font-mono text-sm">
-                            <code class="text-green-400">composer require serveravatar/watchtower-agent</code>
+
+                        {{-- Development Installation --}}
+                        <div class="mb-6">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300">Development</span>
+                            </div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">For local development, configure a path repository in your Laravel application's composer.json:</p>
+                            <div class="bg-gray-900 dark:bg-gray-700 rounded-lg p-4 font-mono text-sm mb-3">
+                                <p class="text-gray-400 mb-2">// Add to your composer.json repositories section:</p>
+                                <p class="text-green-400">{</p>
+                                <p class="text-green-400">    "type": "path",</p>
+                                <p class="text-green-400">    "url": "../sa-watchtower-agent",</p>
+                                <p class="text-green-400">    "options": { "symlink": true }</p>
+                                <p class="text-green-400">}</p>
+                            </div>
+                            <div class="bg-gray-900 dark:bg-gray-700 rounded-lg p-4 font-mono text-sm">
+                                <code class="text-green-400">composer require serveravatar/watchtower-agent:*@dev</code>
+                            </div>
+                        </div>
+
+                        {{-- Production Installation --}}
+                        <div>
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300">Production</span>
+                                <span class="text-xs text-gray-500 dark:text-gray-400">(Coming soon — package pending Packagist publication)</span>
+                            </div>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">Once published to Packagist, install via:</p>
+                            <div class="bg-gray-900 dark:bg-gray-700 rounded-lg p-4 font-mono text-sm">
+                                <code class="text-green-400">composer require serveravatar/watchtower-agent</code>
+                            </div>
+                            <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">Package repository: git@github.com:patil-jayshree/serveravatar-watchtower-agent.git</p>
                         </div>
                     </div>
                 </div>
