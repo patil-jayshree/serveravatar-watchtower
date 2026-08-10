@@ -188,6 +188,9 @@
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                             Location
                         </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Actions
+                        </th>
                     </tr>
                 </thead>
                 <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
@@ -220,6 +223,34 @@
                                 <div class="truncate max-w-xs" title="{{ $group->file }}:{{ $group->line }}">
                                     {{ Str::after($group->file, 'app/') ?? $group->file }}:{{ $group->line }}
                                 </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                @if($group->isOpen())
+                                    <form method="POST"
+                                          action="{{ route('organizations.projects.exceptions.update-status', [$organization, $project, $group->uuid]) }}"
+                                          style="display:inline;">
+                                        @csrf
+                                        @method('PUT')
+                                        <input type="hidden" name="status" value="resolved">
+                                        <button type="submit"
+                                                class="text-green-600 hover:text-green-800 font-medium text-xs"
+                                                onclick="return confirm('Mark this exception as resolved?');">
+                                            Resolve
+                                        </button>
+                                    </form>
+                                @else
+                                    <form method="POST"
+                                          action="{{ route('organizations.projects.exceptions.update-status', [$organization, $project, $group->uuid]) }}"
+                                          style="display:inline;">
+                                        @csrf
+                                        @method('PUT')
+                                        <input type="hidden" name="status" value="open">
+                                        <button type="submit"
+                                                class="text-gray-600 hover:text-gray-800 font-medium text-xs">
+                                            Reopen
+                                        </button>
+                                    </form>
+                                @endif
                             </td>
                         </tr>
                     @endforeach
