@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Project;
 
 use App\Http\Controllers\Controller;
+use App\Models\Organization;
 use App\Models\Project;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -10,7 +11,7 @@ use Illuminate\Support\Facades\Auth;
 
 class RequestEventController extends Controller
 {
-    public function index(Request $request, Project $organization, Project $project): Response
+    public function index(Request $request, Organization $organization, Project $project): Response
     {
         // Ensure user owns the organization
         if ($project->organization->user_id !== Auth::id()) {
@@ -67,7 +68,7 @@ class RequestEventController extends Controller
         ]);
     }
 
-    public function show(Request $request, Project $organization, Project $project, string $uuid): Response
+    public function show(Request $request, Organization $organization, Project $project, string $uuid): Response
     {
         if ($project->organization->user_id !== Auth::id()) {
             abort(403);
