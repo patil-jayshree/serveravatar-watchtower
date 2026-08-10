@@ -204,6 +204,18 @@
             </div>
         </div>
 
+        {{-- Generate Token Button (when no token exists) --}}
+        @if(!$agentToken || !$agentToken->isActive())
+            <div class="mt-6 flex flex-wrap gap-3 justify-end">
+                <button onclick="generateToken()" class="inline-flex items-center px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+                    <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    Generate Token
+                </button>
+            </div>
+        @endif
+
         {{-- Token Actions --}}
         @if($agentToken && $agentToken->isActive())
             <div class="mt-6 flex flex-wrap gap-3 justify-end">
@@ -261,6 +273,24 @@
     </div>
 </div>
 
+{{-- Generate Token Modal --}}
+<div id="generate-modal" class="hidden fixed inset-0 bg-black/50 dark:bg-black/70 z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Generate Agent Token?</h3>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
+            This will create a new agent token for this project. You will be shown the token once — store it securely.
+        </p>
+        <div class="flex justify-end gap-3">
+            <button onclick="closeModals()" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200">
+                Cancel
+            </button>
+            <button onclick="confirmGenerate()" class="px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+                Generate
+            </button>
+        </div>
+    </div>
+</div>
+
 {{-- Verify Connection Modal --}}
 <div id="verify-modal" class="hidden fixed inset-0 bg-black/50 dark:bg-black/70 z-50 flex items-center justify-center p-4">
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6">
@@ -300,6 +330,10 @@ function verifyConnection() {
     document.getElementById('verify-modal').classList.remove('hidden');
 }
 
+function generateToken() {
+    document.getElementById('generate-modal').classList.remove('hidden');
+}
+
 function regenerateToken() {
     document.getElementById('regenerate-modal').classList.remove('hidden');
 }
@@ -312,6 +346,32 @@ function closeModals() {
     document.getElementById('regenerate-modal').classList.add('hidden');
     document.getElementById('revoke-modal').classList.add('hidden');
     document.getElementById('verify-modal').classList.add('hidden');
+    document.getElementById('generate-modal').classList.add('hidden');
+}
+
+function confirmGenerate() {
+    closeModals();
+    fetch('{{ route('organizations.projects.agent.store', [$organization, $project]) }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.token) {
+            justGeneratedToken = data.token;
+            window.location.href = '{{ route('organizations.projects.agent.show', [$organization, $project]) }}?token=' + encodeURIComponent(data.token);
+        } else {
+            window.location.reload();
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('An error occurred. Please try again.');
+    });
 }
 
 function confirmRegenerate() {
