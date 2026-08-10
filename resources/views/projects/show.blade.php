@@ -49,6 +49,9 @@
             <a href="{{ route('organizations.projects.requests.index', [$organization, $project]) }}" class="px-4 py-2 text-sm font-medium border-b-2 {{ request()->routeIs('organizations.projects.requests.*') ? 'border-primary-600 text-primary-600 dark:text-primary-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' }}">
                 Requests
             </a>
+            <a href="{{ route('organizations.projects.exceptions.index', [$organization, $project]) }}" class="px-4 py-2 text-sm font-medium border-b-2 {{ request()->routeIs('organizations.projects.exceptions.*') ? 'border-primary-600 text-primary-600 dark:text-primary-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' }}">
+                Exceptions
+            </a>
             @endif
         </div>
         {{-- Success Message --}}
@@ -136,6 +139,8 @@
             $successRequests = $project->requestEvents()->whereBetween('status_code', [200, 299])->count();
             $errorRequests = $project->requestEvents()->where('status_code', '>=', 400)->count();
             $avgDuration = round($project->requestEvents()->avg('duration_ms') ?? 0);
+            $totalExceptions = $project->exceptionGroups()->count();
+            $openExceptions = $project->exceptionGroups()->where('status', 'open')->count();
         @endphp
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
             <div class="flex items-center justify-between mb-4">
@@ -163,6 +168,36 @@
                 </div>
             </div>
         </div>
+
+        {{-- Exception Summary (only if connected) --}}
+        @if($project->is_connected && $totalExceptions > 0)
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Exception Monitoring</h2>
+                <a href="{{ route('organizations.projects.exceptions.index', [$organization, $project]) }}" class="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
+                    View All →
+                </a>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Total Exception Groups</p>
+                    <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ number_format($totalExceptions) }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Open Issues</p>
+                    <p class="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">{{ number_format($openExceptions) }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Resolved</p>
+                    <p class="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">{{ number_format($totalExceptions - $openExceptions) }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">This Project</p>
+                    <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ $project->name }}</p>
+                </div>
+            </div>
+        </div>
+        @endif
         @endif
 
         {{-- Project Info --}}

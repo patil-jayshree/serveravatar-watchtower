@@ -110,6 +110,22 @@ class Project extends Model
     }
 
     /**
+     * Get the exception groups for this project.
+     */
+    public function exceptionGroups(): HasMany
+    {
+        return $this->hasMany(ExceptionGroup::class);
+    }
+
+    /**
+     * Get the exception occurrences for this project.
+     */
+    public function exceptionOccurrences(): HasMany
+    {
+        return $this->hasMany(ExceptionOccurrence::class);
+    }
+
+    /**
      * Check if a given user is the owner of this project.
      */
     public function isOwnedBy(User $user): bool

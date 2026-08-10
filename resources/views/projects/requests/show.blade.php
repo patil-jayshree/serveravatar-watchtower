@@ -127,6 +127,51 @@
                     </div>
                 </dl>
             </div>
+
+            {{-- Related Exceptions --}}
+            @php
+                $relatedExceptions = $project->exceptionOccurrences()
+                    ->where('request_id', $event->request_id)
+                    ->with('exceptionGroup')
+                    ->orderByDesc('occurred_at')
+                    ->limit(5)
+                    ->get();
+            @endphp
+            @if($relatedExceptions->count() > 0)
+            <div class="bg-red-50 dark:bg-red-900/10 rounded-xl shadow-sm border border-red-200 dark:border-red-800 p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-semibold text-red-900 dark:text-red-400">
+                        Related Exceptions
+                    </h2>
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400">
+                        {{ $relatedExceptions->count() }}
+                    </span>
+                </div>
+                <div class="space-y-3">
+                    @foreach($relatedExceptions as $exc)
+                        <a href="{{ route('organizations.projects.exceptions.show', [$organization, $project, $exc->exception_group_uuid]) }}"
+                           class="block p-3 bg-white dark:bg-gray-800 rounded-lg border border-red-100 dark:border-red-800 hover:border-red-300 dark:hover:border-red-700 transition-colors">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <span class="font-mono text-sm font-medium text-red-600 dark:text-red-400">
+                                        {{ class_basename($exc->exceptionGroup->exception_type) }}
+                                    </span>
+                                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1 truncate max-w-md">
+                                        {{ $exc->message_preview ?? Str::limit($exc->message, 100) }}
+                                    </p>
+                                </div>
+                                <svg class="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                                </svg>
+                            </div>
+                            <div class="mt-2 text-xs text-gray-500 dark:text-gray-400">
+                                {{ $exc->occurred_at->format('M j, Y H:i:s') }}
+                            </div>
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+            @endif
         </div>
     </div>
 </div>
