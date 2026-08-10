@@ -48,14 +48,73 @@ class ExceptionGroupController extends Controller
             });
         }
 
+        // Time range filter
+        if ($request->filled('time_range')) {
+            $timeRange = $request->input('time_range');
+            $startDate = match ($timeRange) {
+                '24h' => now()->subDay(),
+                '7d' => now()->subWeek(),
+                '30d' => now()->subMonth(),
+                'custom' => $request->filled('start_date')
+                    ? \Carbon\Carbon::parse($request->input('start_date'))->startOfDay()
+                    : null,
+                default => null,
+            };
+
+            if ($startDate) {
+                $query->where('last_seen_at', '>=', $startDate);
+            }
+        }
+
         $perPage = min((int) $request->input('per_page', 25), 100);
         $groups = $query->paginate($perPage);
 
-        // Summary stats
+        // Summary stats - respect same filters as the main query
+        $statsQuery = $project->exceptionGroups();
+
+        if ($request->filled('status')) {
+            $statsQuery->where('status', $request->input('status'));
+        }
+
+        if ($request->filled('type')) {
+            $statsQuery->where('exception_type', 'like', '%' . $request->input('type') . '%');
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $statsQuery->where(function ($q) use ($search) {
+                $q->where('exception_type', 'like', "%{$search}%")
+                    ->orWhere('normalized_message', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->filled('environment')) {
+            $statsQuery->whereHas('occurrences', function ($q) use ($request) {
+                $q->where('environment', $request->input('environment'));
+            });
+        }
+
+        if ($request->filled('time_range')) {
+            $timeRange = $request->input('time_range');
+            $startDate = match ($timeRange) {
+                '24h' => now()->subDay(),
+                '7d' => now()->subWeek(),
+                '30d' => now()->subMonth(),
+                'custom' => $request->filled('start_date')
+                    ? \Carbon\Carbon::parse($request->input('start_date'))->startOfDay()
+                    : null,
+                default => null,
+            };
+
+            if ($startDate) {
+                $statsQuery->where('last_seen_at', '>=', $startDate);
+            }
+        }
+
         $stats = [
-            'total' => $project->exceptionGroups()->count(),
-            'open' => $project->exceptionGroups()->where('status', 'open')->count(),
-            'resolved' => $project->exceptionGroups()->where('status', 'resolved')->count(),
+            'total' => (clone $statsQuery)->count(),
+            'open' => (clone $statsQuery)->where('status', 'open')->count(),
+            'resolved' => (clone $statsQuery)->where('status', 'resolved')->count(),
         ];
 
         return response()->view('projects.exceptions.index', [
@@ -63,7 +122,13 @@ class ExceptionGroupController extends Controller
             'project' => $project,
             'groups' => $groups,
             'stats' => $stats,
-            'filters' => $request->only(['status', 'type', 'search', 'environment', 'per_page']),
+            'filters' => $request->only(['status', 'type', 'search', 'environment', 'per_page', 'time_range', 'start_date', 'end_date']),
+            'exceptionTypes' => $project->exceptionGroups()
+                ->select('exception_type')
+                ->distinct()
+                ->orderBy('exception_type')
+                ->pluck('exception_type')
+                ->map(fn ($type) => class_basename($type)),
         ]);
     }
 

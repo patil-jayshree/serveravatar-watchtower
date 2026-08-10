@@ -74,7 +74,13 @@ class RequestEventController extends Controller
             abort(403);
         }
 
-        $event = $project->requestEvents()->where('uuid', $uuid)->firstOrFail();
+        // Support both uuid and request_id lookup
+        $event = $project->requestEvents()
+            ->where(function ($query) use ($uuid) {
+                $query->where('uuid', $uuid)
+                    ->orWhere('request_id', $uuid);
+            })
+            ->firstOrFail();
 
         return response()->view('projects.requests.show', [
             'organization' => $project->organization,

@@ -91,9 +91,13 @@
             <!-- Exception Type Filter -->
             <div>
                 <label for="type" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Exception Type</label>
-                <input type="text" name="type" id="type" value="{{ $filters['type'] ?? '' }}"
-                       placeholder="RuntimeException..."
-                       class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                <select name="type" id="type"
+                        class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    <option value="">All Types</option>
+                    @foreach($exceptionTypes as $type)
+                        <option value="{{ $type }}" {{ ($filters['type'] ?? '') === $type ? 'selected' : '' }}>{{ $type }}</option>
+                    @endforeach
+                </select>
             </div>
 
             <!-- Environment Filter -->
@@ -105,17 +109,52 @@
                     <option value="production" {{ ($filters['environment'] ?? '') === 'production' ? 'selected' : '' }}>Production</option>
                     <option value="local" {{ ($filters['environment'] ?? '') === 'local' ? 'selected' : '' }}>Local</option>
                     <option value="staging" {{ ($filters['environment'] ?? '') === 'staging' ? 'selected' : '' }}>Staging</option>
+                    <option value="development" {{ ($filters['environment'] ?? '') === 'development' ? 'selected' : '' }}>Development</option>
                 </select>
             </div>
 
-            <!-- Submit -->
-            <div class="flex items-end">
-                <button type="submit"
-                        class="w-full bg-indigo-600 text-white rounded-md px-4 py-2 text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                    Filter
-                </button>
+            <!-- Time Range Filter -->
+            <div>
+                <label for="time_range" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Time Range</label>
+                <select name="time_range" id="time_range"
+                        class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    <option value="">All Time</option>
+                    <option value="24h" {{ ($filters['time_range'] ?? '') === '24h' ? 'selected' : '' }}>Last 24 Hours</option>
+                    <option value="7d" {{ ($filters['time_range'] ?? '') === '7d' ? 'selected' : '' }}>Last 7 Days</option>
+                    <option value="30d" {{ ($filters['time_range'] ?? '') === '30d' ? 'selected' : '' }}>Last 30 Days</option>
+                    <option value="custom" {{ ($filters['time_range'] ?? '') === 'custom' ? 'selected' : '' }}>Custom</option>
+                </select>
             </div>
-        </form>
+        </div>
+
+        <!-- Custom Date Range (shown when Custom is selected) -->
+        <div id="customDateRange" class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4" style="display: none;">
+            <div>
+                <label for="start_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Start Date</label>
+                <input type="date" name="start_date" id="start_date" value="{{ $filters['start_date'] ?? '' }}"
+                       class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+            </div>
+            <div>
+                <label for="end_date" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">End Date</label>
+                <input type="date" name="end_date" id="end_date" value="{{ $filters['end_date'] ?? '' }}"
+                       class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+            </div>
+        </div>
+
+        <!-- Filter Actions -->
+        <div class="flex items-center justify-between mt-4">
+            <button type="submit"
+                    class="bg-indigo-600 text-white rounded-md px-4 py-2 text-sm font-medium hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                Apply Filters
+            </button>
+            @if(array_filter($filters))
+                <a href="{{ route('organizations.projects.exceptions.index', [$organization, $project]) }}"
+                   class="text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                    Clear Filters
+                </a>
+            @endif
+        </div>
+    </form>
     </div>
 
     <!-- Exception Groups List -->
@@ -194,4 +233,26 @@
         @endif
     </div>
 </div>
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const timeRangeSelect = document.getElementById('time_range');
+        const customDateRange = document.getElementById('customDateRange');
+
+        function toggleCustomDateRange() {
+            if (timeRangeSelect.value === 'custom') {
+                customDateRange.style.display = 'grid';
+            } else {
+                customDateRange.style.display = 'none';
+            }
+        }
+
+        if (timeRangeSelect) {
+            timeRangeSelect.addEventListener('change', toggleCustomDateRange);
+            toggleCustomDateRange();
+        }
+    });
+</script>
+@endpush
 @endsection

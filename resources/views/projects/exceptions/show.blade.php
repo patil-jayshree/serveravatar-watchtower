@@ -254,19 +254,22 @@
                 <thead class="bg-gray-50 dark:bg-gray-700">
                     <tr>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                            Time
+                            Date/Time
                         </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                            Status
-                        </th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                            Method
-                        </th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                            Path
+                            HTTP Status
                         </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                             Request ID
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Environment
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Method / Path
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Actions
                         </th>
                     </tr>
                 </thead>
@@ -285,23 +288,35 @@
                                         {{ $occurrence->status_code }}
                                     </span>
                                 @else
-                                    —
+                                    <span class="text-gray-400">—</span>
                                 @endif
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-300">
-                                {{ $occurrence->method ?? '—' }}
-                            </td>
-                            <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400 font-mono">
-                                {{ $occurrence->path ?? '—' }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-500 dark:text-gray-400">
                                 @if($occurrence->request_id)
+                                    {{ Str::limit($occurrence->request_id, 12) }}
+                                @else
+                                    <span class="text-gray-400">—</span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                                {{ $occurrence->environment ?? '—' }}
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                                @if($occurrence->method || $occurrence->path)
+                                    <span class="font-mono">{{ $occurrence->method ?? '' }}</span>
+                                    <span class="ml-1">{{ $occurrence->path ?? '' }}</span>
+                                @else
+                                    <span class="text-gray-400">—</span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                @if($occurrence->request_id)
                                     <a href="{{ route('organizations.projects.requests.show', [$organization, $project, $occurrence->request_id]) }}"
-                                       class="text-indigo-600 hover:text-indigo-800">
-                                        {{ Str::limit($occurrence->request_id, 15) }}
+                                       class="text-indigo-600 hover:text-indigo-800 font-medium">
+                                        View Request →
                                     </a>
                                 @else
-                                    —
+                                    <span class="text-gray-400">—</span>
                                 @endif
                             </td>
                         </tr>
