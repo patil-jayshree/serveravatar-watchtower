@@ -28,6 +28,7 @@ class ProjectFactory extends Factory
             'framework' => fake()->randomElement(ProjectFramework::values()),
             'environment' => fake()->randomElement(ProjectEnvironment::values()),
             'status' => fake()->randomElement(ProjectStatus::values()),
+            'is_connected' => false,
         ];
     }
 

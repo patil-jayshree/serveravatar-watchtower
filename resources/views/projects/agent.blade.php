@@ -18,7 +18,7 @@
                 </svg>
                 <span>Agent</span>
             </div>
-            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Agent</h1>
+            <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Laravel Agent</h1>
         </div>
 
         {{-- Success/Error Messages --}}
@@ -33,132 +33,166 @@
             </div>
         @endif
 
-        {{-- Connection Status Card --}}
+        {{-- Connection Status Banner --}}
         <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Agent Connection</h2>
-            
-            <div class="flex items-center gap-4 mb-6">
-                @if($agentToken && $agentToken->isActive())
-                    <div class="flex-shrink-0 w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
-                        <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                        </svg>
-                    </div>
-                    <div>
-                        <p class="text-lg font-medium text-gray-900 dark:text-white">Token Active</p>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">Your Laravel application is connected</p>
-                    </div>
-                @elseif($agentToken && $agentToken->isRevoked())
-                    <div class="flex-shrink-0 w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center">
-                        <svg class="w-6 h-6 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </div>
-                    <div>
-                        <p class="text-lg font-medium text-gray-900 dark:text-white">Token Revoked</p>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">The agent token has been revoked</p>
-                    </div>
-                @else
-                    <div class="flex-shrink-0 w-12 h-12 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center">
-                        <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                        </svg>
-                    </div>
-                    <div>
-                        <p class="text-lg font-medium text-gray-900 dark:text-white">Not Connected</p>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">Generate an Agent Token to connect your Laravel application</p>
-                    </div>
-                @endif
-            </div>
-
-            {{-- Token Display --}}
-            @if($agentToken)
-                <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 mb-6">
-                    <div class="flex items-center justify-between">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    @if($project->is_connected)
+                        <div class="flex-shrink-0 w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center">
+                            <svg class="w-6 h-6 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                            </svg>
+                        </div>
                         <div>
-                            <p class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Agent Token</p>
-                            <p class="font-mono text-sm text-gray-900 dark:text-white" id="token-display">
-                                @if($justGenerated && $rawToken)
-                                    {{ $rawToken }}
+                            <p class="text-lg font-semibold text-gray-900 dark:text-white">Connected</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">
+                                @if($project->last_connected_at)
+                                    Last connected: {{ $project->last_connected_at->diffForHumans() }}
                                 @else
-                                    {{ $agentToken->masked_token }}
+                                    Laravel Agent is connected
                                 @endif
                             </p>
                         </div>
+                    @else
+                        <div class="flex-shrink-0 w-12 h-12 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center">
+                            <svg class="w-6 h-6 text-yellow-600 dark:text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <p class="text-lg font-semibold text-gray-900 dark:text-white">Not Connected</p>
+                            <p class="text-sm text-gray-500 dark:text-gray-400">Follow the steps below to connect your Laravel application</p>
+                        </div>
+                    @endif
+                </div>
+
+                {{-- Verify Connection Button --}}
+                <button onclick="verifyConnection()" class="inline-flex items-center px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
+                    <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Verify Connection
+                </button>
+            </div>
+        </div>
+
+        {{-- Installation Steps --}}
+        <div class="space-y-6">
+            {{-- Step 1: Install --}}
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                <div class="flex items-start gap-4">
+                    <div class="flex-shrink-0 w-8 h-8 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center">
+                        <span class="text-sm font-semibold text-primary-600 dark:text-primary-400">1</span>
+                    </div>
+                    <div class="flex-1">
+                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Install the Agent</h2>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Run this command in your Laravel application root:</p>
+                        <div class="bg-gray-900 dark:bg-gray-700 rounded-lg p-4 font-mono text-sm">
+                            <code class="text-green-400">composer require serveravatar/watchtower-agent</code>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Step 2: Configure --}}
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                <div class="flex items-start gap-4">
+                    <div class="flex-shrink-0 w-8 h-8 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center">
+                        <span class="text-sm font-semibold text-primary-600 dark:text-primary-400">2</span>
+                    </div>
+                    <div class="flex-1">
+                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Configure Environment</h2>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Add these variables to your Laravel application's <code class="px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs">.env</code> file:</p>
+
+                        <div class="bg-gray-900 dark:bg-gray-700 rounded-lg p-4 font-mono text-sm space-y-2">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <span class="text-gray-400">WATCHTOWER_URL=</span>
+                                    <span class="text-green-400">{{ url('/') }}</span>
+                                </div>
+                                <button onclick="copyToClipboard('{{ url('/') }}', 'URL')" class="text-xs text-gray-400 hover:text-white">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                                    </svg>
+                                </button>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <span class="text-gray-400">WATCHTOWER_TOKEN=</span>
+                                    <span class="text-green-400" id="token-display">{{ $agentToken ? $agentToken->masked_token : 'No token generated' }}</span>
+                                </div>
+                                @if($agentToken && $justGenerated && $rawToken)
+                                    <button onclick="copyToClipboard('{{ $rawToken }}', 'Token')" class="text-xs text-gray-400 hover:text-white">
+                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
+                                        </svg>
+                                    </button>
+                                @endif
+                            </div>
+                        </div>
+
                         @if($justGenerated && $rawToken)
-                            <button onclick="copyToken()" class="inline-flex items-center px-3 py-1.5 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
-                                <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                                </svg>
-                                Copy Token
-                            </button>
+                            <div class="mt-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+                                <div class="flex items-start gap-3">
+                                    <svg class="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                    </svg>
+                                    <div>
+                                        <p class="text-sm font-medium text-amber-800 dark:text-amber-200">Store this token securely.</p>
+                                        <p class="text-sm text-amber-700 dark:text-amber-300 mt-1">It will not be shown again. If you lose it, regenerate a new token.</p>
+                                    </div>
+                                </div>
+                            </div>
                         @endif
                     </div>
                 </div>
+            </div>
 
-                {{-- Warning for newly generated tokens --}}
-                @if($justGenerated && $rawToken)
-                    <div class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4 mb-6">
-                        <div class="flex items-start gap-3">
-                            <svg class="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                            </svg>
-                            <div>
-                                <p class="text-sm font-medium text-amber-800 dark:text-amber-200">Store this token securely.</p>
-                                <p class="text-sm text-amber-700 dark:text-amber-300 mt-1">It will be used by your Laravel application to authenticate with Watchtower. This token will not be shown again after you leave this page.</p>
+            {{-- Step 3: Verify --}}
+            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                <div class="flex items-start gap-4">
+                    <div class="flex-shrink-0 w-8 h-8 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center">
+                        <span class="text-sm font-semibold text-primary-600 dark:text-primary-400">3</span>
+                    </div>
+                    <div class="flex-1">
+                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Verify Connection</h2>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Run this command in your Laravel application to test the connection:</p>
+                        <div class="bg-gray-900 dark:bg-gray-700 rounded-lg p-4 font-mono text-sm">
+                            <code class="text-green-400">php artisan watchtower:status</code>
+                        </div>
+
+                        <div class="mt-6 border-t border-gray-200 dark:border-gray-700 pt-6">
+                            <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Expected Output:</h3>
+                            <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 text-sm font-mono">
+                                @if($project->is_connected)
+                                    <p class="text-green-600 dark:text-green-400">Watchtower Agent<br>----------------<br><br>Status: Connected<br>Project: {{ $project->name }}<br>Environment: {{ $project->environment }}</p>
+                                @else
+                                    <p class="text-yellow-600 dark:text-yellow-400">Watchtower Agent<br>----------------<br><br>Status: Not Connected<br><br>Connection has not been verified.</p>
+                                @endif
                             </div>
                         </div>
                     </div>
-                @endif
-
-                {{-- Token Info --}}
-                <div class="text-sm text-gray-500 dark:text-gray-400 mb-6">
-                    @if($agentToken->isActive())
-                        <p>Created: {{ $agentToken->created_at->format('M d, Y H:i') }}</p>
-                    @elseif($agentToken->isRevoked())
-                        <p>Revoked: {{ $agentToken->revoked_at->format('M d, Y H:i') }}</p>
-                    @endif
                 </div>
-            @endif
-
-            {{-- Actions --}}
-            <div class="flex flex-wrap gap-3">
-                @if(!$agentToken || ($agentToken && $agentToken->isRevoked()))
-                    <button onclick="generateToken()" class="inline-flex items-center px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
-                        <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                        </svg>
-                        Generate Token
-                    </button>
-                @elseif($agentToken && $agentToken->isActive())
-                    <button onclick="regenerateToken()" class="inline-flex items-center px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg transition-colors duration-200">
-                        <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                        Regenerate Token
-                    </button>
-                    <button onclick="revokeToken()" class="inline-flex items-center px-4 py-2 bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-900/50 text-red-700 dark:text-red-300 text-sm font-medium rounded-lg transition-colors duration-200">
-                        <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                        Revoke Token
-                    </button>
-                @endif
             </div>
         </div>
 
-        {{-- Installation Section --}}
-        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-            <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Laravel Agent</h2>
-            <p class="text-gray-600 dark:text-gray-400 mb-4">
-                Installation instructions will be available soon. The Watchtower Agent will allow your Laravel application to connect and send telemetry data to Watchtower.
-            </p>
-            <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
-                <p class="text-sm text-gray-500 dark:text-gray-400">
-                    <span class="font-medium">Coming Soon:</span> Composer installation, configuration, and setup guide.
-                </p>
+        {{-- Token Actions --}}
+        @if($agentToken && $agentToken->isActive())
+            <div class="mt-6 flex flex-wrap gap-3 justify-end">
+                <button onclick="regenerateToken()" class="inline-flex items-center px-4 py-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg transition-colors duration-200">
+                    <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                    Regenerate Token
+                </button>
+                <button onclick="revokeToken()" class="inline-flex items-center px-4 py-2 bg-red-100 dark:bg-red-900/30 hover:bg-red-200 dark:hover:bg-red-900/50 text-red-700 dark:text-red-300 text-sm font-medium rounded-lg transition-colors duration-200">
+                    <svg class="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    Revoke Token
+                </button>
             </div>
-        </div>
+        @endif
     </div>
 </div>
 
@@ -168,7 +202,7 @@
     <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6">
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Regenerate Agent Token?</h3>
         <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
-            Regenerating this token will disconnect any Laravel application currently using the old token until it is updated.
+            Regenerating this token will disconnect any Laravel application currently using the old token. You will need to update your WATCHTOWER_TOKEN environment variable.
         </p>
         <div class="flex justify-end gap-3">
             <button onclick="closeModals()" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200">
@@ -199,62 +233,43 @@
     </div>
 </div>
 
+{{-- Verify Connection Modal --}}
+<div id="verify-modal" class="hidden fixed inset-0 bg-black/50 dark:bg-black/70 z-50 flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full p-6">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Verify Connection</h3>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">
+            To verify the connection, run <code class="px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs">php artisan watchtower:status</code> in your Laravel application terminal. This checks if the agent can successfully connect to Watchtower.
+        </p>
+        <div class="flex justify-end gap-3">
+            <button onclick="closeModals()" class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors duration-200">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
 <script>
-function copyToken() {
-    const tokenDisplay = document.getElementById('token-display');
-    if (tokenDisplay) {
-        navigator.clipboard.writeText(tokenDisplay.textContent.trim()).then(() => {
-            showCopyFeedback();
-        });
-    }
-}
+let justGeneratedToken = '{{ $justGenerated && $rawToken ? $rawToken : '' }}';
 
-function showCopyFeedback() {
-    const messageArea = document.getElementById('message-area') || createMessageArea();
-    const messageText = document.getElementById('message-text') || messageArea.querySelector('p');
-    
-    messageArea.className = 'mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg';
-    messageText.className = 'text-sm text-green-800 dark:text-green-200';
-    messageText.textContent = 'Copied!';
-    
-    messageArea.classList.remove('hidden');
-}
-
-function createMessageArea() {
-    const div = document.createElement('div');
-    div.id = 'message-area';
-    div.className = 'mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg';
-    div.innerHTML = '<p id="message-text" class="text-sm text-green-800 dark:text-green-200"></p>';
-    document.querySelector('.max-w-3xl').prepend(div);
-    return div;
-}
-
-function generateToken() {
-    fetch('{{ route('organizations.projects.agent.store', [$organization, $project]) }}', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            'Accept': 'application/json',
-        },
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.token) {
-            // Show the new token
-            window.location.href = '{{ route('organizations.projects.agent.show', [$organization, $project]) }}?token=' + encodeURIComponent(data.token);
-        } else {
-            // Token already exists, show it
-            window.location.reload();
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('An error occurred. Please try again.');
+function copyToClipboard(text, label) {
+    navigator.clipboard.writeText(text).then(() => {
+        showToast(label + ' copied to clipboard');
     });
+}
+
+function showToast(message) {
+    const toast = document.createElement('div');
+    toast.className = 'fixed bottom-4 right-4 bg-gray-900 dark:bg-gray-700 text-white px-4 py-2 rounded-lg shadow-lg text-sm z-50';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3000);
+}
+
+function verifyConnection() {
+    document.getElementById('verify-modal').classList.remove('hidden');
 }
 
 function regenerateToken() {
@@ -268,6 +283,7 @@ function revokeToken() {
 function closeModals() {
     document.getElementById('regenerate-modal').classList.add('hidden');
     document.getElementById('revoke-modal').classList.add('hidden');
+    document.getElementById('verify-modal').classList.add('hidden');
 }
 
 function confirmRegenerate() {
@@ -283,6 +299,7 @@ function confirmRegenerate() {
     .then(response => response.json())
     .then(data => {
         if (data.token) {
+            justGeneratedToken = data.token;
             window.location.href = '{{ route('organizations.projects.agent.show', [$organization, $project]) }}?token=' + encodeURIComponent(data.token);
         } else {
             window.location.reload();
@@ -290,7 +307,7 @@ function confirmRegenerate() {
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('An error occurred. Please try again.');
+        showToast('An error occurred. Please try again.');
     });
 }
 
@@ -310,7 +327,7 @@ function confirmRevoke() {
     })
     .catch(error => {
         console.error('Error:', error);
-        alert('An error occurred. Please try again.');
+        showToast('An error occurred. Please try again.');
     });
 }
 </script>

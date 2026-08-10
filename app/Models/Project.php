@@ -28,6 +28,18 @@ class Project extends Model
         'environment',
         'status',
         'organization_id',
+        'is_connected',
+        'last_connected_at',
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'is_connected' => 'boolean',
+        'last_connected_at' => 'datetime',
     ];
 
     /**
@@ -126,5 +138,26 @@ class Project extends Model
     public function getRouteKeyName(): string
     {
         return 'uuid';
+    }
+
+    /**
+     * Mark the project as connected.
+     */
+    public function markAsConnected(): void
+    {
+        $this->update([
+            'is_connected' => true,
+            'last_connected_at' => now(),
+        ]);
+    }
+
+    /**
+     * Mark the project as disconnected.
+     */
+    public function markAsDisconnected(): void
+    {
+        $this->update([
+            'is_connected' => false,
+        ]);
     }
 }

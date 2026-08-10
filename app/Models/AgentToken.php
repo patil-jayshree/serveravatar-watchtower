@@ -103,6 +103,17 @@ class AgentToken extends Model
     }
 
     /**
+     * Verify the token hash without checking status.
+     * Used internally for token lookup before status validation.
+     */
+    public function verifyHash(string $rawToken): bool
+    {
+        $hash = hash('sha256', $rawToken);
+
+        return hash_equals($this->token_hash, $hash);
+    }
+
+    /**
      * Get the masked token for display.
      */
     public function getMaskedTokenAttribute(): string
