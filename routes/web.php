@@ -8,6 +8,7 @@ use App\Http\Controllers\Organization\OrganizationController;
 use App\Http\Controllers\Organization\OrganizationMemberController;
 use App\Http\Controllers\Organization\OrganizationSettingsController;
 use App\Http\Controllers\Organization\SwitchOrganizationController;
+use App\Http\Controllers\Agent\AgentTokenController;
 use App\Http\Controllers\Project\ProjectController;
 use App\Http\Middleware\LoadCurrentOrganization;
 use App\Http\Middleware\LoadCurrentProject;
@@ -75,6 +76,12 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/projects/{project}/edit', [ProjectController::class, 'edit'])->name('projects.edit');
             Route::put('/projects/{project}', [ProjectController::class, 'update'])->name('projects.update');
             Route::delete('/projects/{project}', [ProjectController::class, 'destroy'])->name('projects.destroy');
+
+            // Agent Token Routes
+            Route::get('/projects/{project}/agent', [AgentTokenController::class, 'show'])->name('projects.agent.show');
+            Route::post('/projects/{project}/agent', [AgentTokenController::class, 'store'])->name('projects.agent.store');
+            Route::put('/projects/{project}/agent', [AgentTokenController::class, 'update'])->name('projects.agent.update');
+            Route::delete('/projects/{project}/agent', [AgentTokenController::class, 'destroy'])->name('projects.agent.destroy');
         });
     });
 

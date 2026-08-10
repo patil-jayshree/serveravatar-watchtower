@@ -8,6 +8,7 @@ use App\Enums\Project\ProjectStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Str;
 
 class Project extends Model
@@ -80,6 +81,14 @@ class Project extends Model
     }
 
     /**
+     * Get the agent token for this project.
+     */
+    public function agentToken(): HasOne
+    {
+        return $this->hasOne(AgentToken::class);
+    }
+
+    /**
      * Check if a given user is the owner of this project.
      */
     public function isOwnedBy(User $user): bool
@@ -109,5 +118,13 @@ class Project extends Model
     public function getStatusEnumAttribute(): ?ProjectStatus
     {
         return ProjectStatus::tryFrom($this->status);
+    }
+
+    /**
+     * Get the route key for the model (used for URL generation).
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'uuid';
     }
 }

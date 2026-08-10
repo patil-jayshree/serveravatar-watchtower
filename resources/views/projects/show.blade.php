@@ -6,7 +6,7 @@
 <div class="py-8">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         {{-- Header --}}
-        <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center justify-between mb-4">
             <div>
                 <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-1">
                     <a href="{{ route('organizations.show', $organization) }}" class="hover:text-gray-700 dark:hover:text-gray-300">{{ $organization->name }}</a>
@@ -33,6 +33,19 @@
             </div>
         </div>
 
+
+        {{-- Tab Navigation --}}
+        <div class="flex items-center gap-1 mb-8 border-b border-gray-200 dark:border-gray-700">
+            <a href="{{ route('organizations.projects.show', [$organization, $project]) }}" class="px-4 py-2 text-sm font-medium border-b-2 {{ request()->routeIs('organizations.projects.show') ? 'border-primary-600 text-primary-600 dark:text-primary-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' }}">
+                Overview
+            </a>
+            <a href="{{ route('organizations.projects.agent.show', [$organization, $project]) }}" class="px-4 py-2 text-sm font-medium border-b-2 {{ request()->routeIs('organizations.projects.agent.*') ? 'border-primary-600 text-primary-600 dark:text-primary-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' }}">
+                Agent
+            </a>
+            <a href="{{ route('organizations.projects.edit', [$organization, $project]) }}" class="px-4 py-2 text-sm font-medium border-b-2 {{ request()->routeIs('organizations.projects.edit') ? 'border-primary-600 text-primary-600 dark:text-primary-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' }}">
+                Settings
+            </a>
+        </div>
         {{-- Success Message --}}
         @if (session('status'))
             <div class="mb-6 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
@@ -63,12 +76,20 @@
                 </div>
             </a>
 
-            {{-- Installation (Coming Soon) --}}
-            <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 opacity-75 cursor-not-allowed">
+            {{-- Agent Connection --}}
+            <a href="{{ route('organizations.projects.agent.show', [$organization, $project]) }}" class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 hover:border-primary-300 dark:hover:border-primary-700 transition-colors duration-200">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-500 dark:text-gray-400">Installation</p>
-                        <p class="text-lg font-semibold text-gray-900 dark:text-white mt-1">Coming Soon</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">Agent Connection</p>
+                        <p class="text-lg font-semibold text-gray-900 dark:text-white mt-1">
+                            @if($project->agentToken && $project->agentToken->isActive())
+                                Connected
+                            @elseif($project->agentToken && $project->agentToken->isRevoked())
+                                Revoked
+                            @else
+                                Not Connected
+                            @endif
+                        </p>
                     </div>
                     <div class="p-3 bg-gray-100 dark:bg-gray-700 rounded-lg">
                         <svg class="w-6 h-6 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -76,8 +97,16 @@
                         </svg>
                     </div>
                 </div>
-                <p class="mt-4 text-xs text-gray-400 dark:text-gray-500">Agent tokens in next phase</p>
-            </div>
+                <p class="mt-4 text-xs text-gray-400 dark:text-gray-500">
+                    @if($project->agentToken && $project->agentToken->isActive())
+                        Agent active
+                    @elseif($project->agentToken && $project->agentToken->isRevoked())
+                        Token revoked
+                    @else
+                        Generate token to connect
+                    @endif
+                </p>
+            </a>
 
             {{-- Created Date --}}
             <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">

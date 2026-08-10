@@ -15,12 +15,18 @@ class LoadCurrentProject
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $project = $request->route('project');
+        $projectParam = $request->route('project');
 
-        if (! $project instanceof Project) {
-            $projectId = $request->route('project');
-            $project = Project::findOrFail($projectId);
+        // If already resolved to a Project (via route model binding), use it
+        if ($projectParam instanceof Project) {
+            $project = $projectParam;
+        } else {
+            // Otherwise lookup by UUID
+            $project = Project::where('uuid', $projectParam)->firstOrFail();
         }
+
+        // Eager load organization relationship
+        $project->load('organization');
 
         // Check if user owns this project through the organization
         if ($project->organization->user_id !== Auth::id()) {
