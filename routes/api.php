@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\Agent\ConnectionController;
+use App\Http\Controllers\Api\Agent\TelemetryController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -18,6 +19,11 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('agent')->name('api.agent.')->group(function () {
     // Connection verification
     Route::post('/connection', [ConnectionController::class, 'verify'])->name('connection');
+
+    // Request telemetry
+    Route::post('/requests', [TelemetryController::class, 'storeRequest'])
+        ->middleware('agent.token.telemetry')
+        ->name('requests.store');
 });
 
 Route::get('/user', function (Request $request) {

@@ -15,6 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
+            'agent.token' => \App\Http\Middleware\ValidateAgentToken::class,
+            'agent.token.telemetry' => \App\Http\Middleware\ValidateAgentTokenForTelemetry::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

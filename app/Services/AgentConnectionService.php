@@ -72,4 +72,16 @@ class AgentConnectionService
             ],
         ];
     }
+
+    /**
+     * Resolve token for telemetry without updating project connection status.
+     * Used for high-frequency telemetry endpoints.
+     *
+     * @throws \App\Exceptions\InvalidAgentTokenException
+     * @throws \App\Exceptions\RevokedAgentTokenException
+     */
+    public function resolveTokenForTelemetry(string $rawToken): AgentToken
+    {
+        return $this->resolveToken($rawToken);
+    }
 }

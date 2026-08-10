@@ -10,6 +10,7 @@ use App\Http\Controllers\Organization\OrganizationSettingsController;
 use App\Http\Controllers\Organization\SwitchOrganizationController;
 use App\Http\Controllers\Agent\AgentTokenController;
 use App\Http\Controllers\Project\ProjectController;
+use App\Http\Controllers\Project\RequestEventController;
 use App\Http\Middleware\LoadCurrentOrganization;
 use App\Http\Middleware\LoadCurrentProject;
 use Illuminate\Support\Facades\Route;
@@ -82,6 +83,10 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/projects/{project}/agent', [AgentTokenController::class, 'store'])->name('projects.agent.store');
             Route::put('/projects/{project}/agent', [AgentTokenController::class, 'update'])->name('projects.agent.update');
             Route::delete('/projects/{project}/agent', [AgentTokenController::class, 'destroy'])->name('projects.agent.destroy');
+
+            // Request Events Routes
+            Route::get('/projects/{project}/requests', [RequestEventController::class, 'index'])->name('projects.requests.index');
+            Route::get('/projects/{project}/requests/{uuid}', [RequestEventController::class, 'show'])->name('projects.requests.show');
         });
     });
 
