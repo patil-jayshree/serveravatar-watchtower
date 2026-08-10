@@ -8,6 +8,7 @@ use App\Enums\Project\ProjectStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Str;
 
@@ -98,6 +99,14 @@ class Project extends Model
     public function agentToken(): HasOne
     {
         return $this->hasOne(AgentToken::class);
+    }
+
+    /**
+     * Get the request events for this project.
+     */
+    public function requestEvents(): HasMany
+    {
+        return $this->hasMany(RequestEvent::class);
     }
 
     /**
