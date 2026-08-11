@@ -52,6 +52,9 @@
             <a href="{{ route('organizations.projects.exceptions.index', [$organization, $project]) }}" class="px-4 py-2 text-sm font-medium border-b-2 {{ request()->routeIs('organizations.projects.exceptions.*') ? 'border-primary-600 text-primary-600 dark:text-primary-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' }}">
                 Exceptions
             </a>
+            <a href="{{ route('organizations.projects.queries.index', [$organization, $project]) }}" class="px-4 py-2 text-sm font-medium border-b-2 {{ request()->routeIs('organizations.projects.queries.*') ? 'border-primary-600 text-primary-600 dark:text-primary-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' }}">
+                Queries
+            </a>
             @endif
         </div>
         {{-- Success Message --}}
@@ -198,6 +201,42 @@
             </div>
         </div>
         @endif
+        @endif
+
+        {{-- Query Monitoring Summary (only if connected) --}}
+        @if($project->is_connected)
+        @php
+            $totalQueries = $project->queryEvents()->count();
+            $slowQueries = $project->queryEvents()->where('is_slow', true)->count();
+            $avgQueryDuration = round($project->queryEvents()->avg('duration_ms') ?? 0);
+            $totalQueryTime = round($project->queryEvents()->sum('duration_ms') ?? 0);
+        @endphp
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Database Queries</h2>
+                <a href="{{ route('organizations.projects.queries.index', [$organization, $project]) }}" class="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
+                    View All →
+                </a>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Total Queries</p>
+                    <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ number_format($totalQueries) }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Slow Queries</p>
+                    <p class="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">{{ number_format($slowQueries) }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Avg Duration</p>
+                    <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ $avgQueryDuration }} ms</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Total Query Time</p>
+                    <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ $totalQueryTime }} ms</p>
+                </div>
+            </div>
+        </div>
         @endif
 
         {{-- Project Info --}}

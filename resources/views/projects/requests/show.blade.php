@@ -188,6 +188,68 @@
                 </div>
             </div>
             @endif
+
+            {{-- Database Queries --}}
+            @php
+                $relatedQueries = $project->queryEvents()
+                    ->where('request_id', $event->request_id)
+                    ->orderByDesc('occurred_at')
+                    ->limit(10)
+                    ->get();
+
+                $totalQueryTime = $relatedQueries->sum('duration_ms');
+            @endphp
+            @if($relatedQueries->count() > 0)
+            <div class="bg-indigo-50 dark:bg-indigo-900/10 rounded-xl shadow-sm border border-indigo-200 dark:border-indigo-800 p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-semibold text-indigo-900 dark:text-indigo-400">
+                        Database Queries
+                    </h2>
+                    <div class="flex items-center gap-3">
+                        <span class="text-sm text-indigo-700 dark:text-indigo-300">
+                            {{ $relatedQueries->count() }} queries · {{ $totalQueryTime }} ms total
+                        </span>
+                        <a href="{{ route('organizations.projects.queries.index', [$organization, $project]) }}?search=&connection=all&slow=all&time_range=all"
+                           class="text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300 text-sm font-medium">
+                            View All →
+                        </a>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    @foreach($relatedQueries as $q)
+                        <a href="{{ route('organizations.projects.queries.show', [$organization, $project, $q->uuid]) }}"
+                           class="block p-3 bg-white dark:bg-gray-800 rounded-lg border border-indigo-100 dark:border-indigo-800 hover:border-indigo-300 dark:hover:border-indigo-700 transition-colors">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-3">
+                                    <span class="px-2 py-0.5 rounded text-xs font-medium
+                                        @if($q->query_type === 'select') bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400
+                                        @elseif($q->query_type === 'insert') bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400
+                                        @elseif($q->query_type === 'update') bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400
+                                        @elseif($q->query_type === 'delete') bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400
+                                        @else bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400
+                                        @endif">
+                                        {{ strtoupper($q->query_type) }}
+                                    </span>
+                                    <span class="font-mono text-sm text-gray-700 dark:text-gray-300 truncate max-w-md">
+                                        {{ Str::limit($q->sql_preview, 60) }}
+                                    </span>
+                                </div>
+                                <div class="flex items-center gap-2 flex-shrink-0">
+                                    @if($q->is_slow)
+                                        <span class="px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
+                                            Slow
+                                        </span>
+                                    @endif
+                                    <span class="text-sm font-medium {{ $q->is_slow ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-gray-400' }}">
+                                        {{ $q->duration_ms }} ms
+                                    </span>
+                                </div>
+                            </div>
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+            @endif
         </div>
     </div>
 </div>

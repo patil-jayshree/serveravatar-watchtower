@@ -126,6 +126,14 @@ class Project extends Model
     }
 
     /**
+     * Get the query events for this project.
+     */
+    public function queryEvents(): HasMany
+    {
+        return $this->hasMany(QueryEvent::class);
+    }
+
+    /**
      * Check if a given user is the owner of this project.
      */
     public function isOwnedBy(User $user): bool

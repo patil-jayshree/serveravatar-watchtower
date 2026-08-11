@@ -11,6 +11,7 @@ use App\Http\Controllers\Organization\SwitchOrganizationController;
 use App\Http\Controllers\Agent\AgentTokenController;
 use App\Http\Controllers\Project\ExceptionGroupController;
 use App\Http\Controllers\Project\ProjectController;
+use App\Http\Controllers\Project\QueryEventController;
 use App\Http\Controllers\Project\RequestEventController;
 use App\Http\Middleware\LoadCurrentOrganization;
 use App\Http\Middleware\LoadCurrentProject;
@@ -93,6 +94,10 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/projects/{project}/exceptions', [ExceptionGroupController::class, 'index'])->name('projects.exceptions.index');
             Route::get('/projects/{project}/exceptions/{uuid}', [ExceptionGroupController::class, 'show'])->name('projects.exceptions.show');
             Route::put('/projects/{project}/exceptions/{uuid}/status', [ExceptionGroupController::class, 'updateStatus'])->name('projects.exceptions.update-status');
+
+            // Query Events Routes
+            Route::get('/projects/{project}/queries', [QueryEventController::class, 'index'])->name('projects.queries.index');
+            Route::get('/projects/{project}/queries/{uuid}', [QueryEventController::class, 'show'])->name('projects.queries.show');
         });
     });
 
