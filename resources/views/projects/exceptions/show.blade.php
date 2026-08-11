@@ -126,7 +126,7 @@
             </div>
 
             <!-- Source Context -->
-            @if($latest->isFromJob() || $latest->hasRequest() || $latestRelatedRequest)
+            @if($latest->isFromJob() || $latest->hasRequest() || $latestRelatedRequest || $latest->isFromCommand())
                 <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
                     @if($latest->isFromJob())
                         @php
@@ -158,6 +158,49 @@
                                 <a href="{{ route('organizations.projects.jobs.show', [$organization, $project, $relatedJob->uuid]) }}"
                                    class="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-800 text-sm font-medium">
                                     View Job →
+                                </a>
+                            </div>
+                        @endif
+                    @elseif($latest->isFromCommand())
+                        @php
+                            $relatedCommand = $latest->commandEvent;
+                        @endphp
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="px-2 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400">
+                                Source: Artisan Command
+                            </span>
+                        </div>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div>
+                                <div class="metadata-label">Command</div>
+                                <div class="metadata-value font-mono">{{ $relatedCommand?->command_name ?? $latest->controller_action ?? 'UnknownCommand' }}</div>
+                            </div>
+                            <div>
+                                <div class="metadata-label">Command ID</div>
+                                <div class="metadata-value font-mono">{{ $latest->command_uuid }}</div>
+                            </div>
+                            @if($relatedCommand?->exit_code !== null)
+                                <div>
+                                    <div class="metadata-label">Exit Code</div>
+                                    <div class="metadata-value">
+                                        <span class="px-2 py-0.5 rounded text-xs font-medium {{ $relatedCommand->exit_code === 0 ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' }}">
+                                            {{ $relatedCommand->exit_code }}
+                                        </span>
+                                    </div>
+                                </div>
+                            @endif
+                            @if($latest->environment)
+                                <div>
+                                    <div class="metadata-label">Environment</div>
+                                    <div class="metadata-value">{{ $latest->environment }}</div>
+                                </div>
+                            @endif
+                        </div>
+                        @if($relatedCommand)
+                            <div class="mt-3">
+                                <a href="{{ route('organizations.projects.commands.show', [$organization, $project, $relatedCommand->uuid]) }}"
+                                   class="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                                    View Command →
                                 </a>
                             </div>
                         @endif

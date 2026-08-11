@@ -150,6 +150,14 @@ class Project extends Model
     }
 
     /**
+     * Get the command events for this project.
+     */
+    public function commandEvents(): HasMany
+    {
+        return $this->hasMany(CommandEvent::class);
+    }
+
+    /**
      * Check if a given user is the owner of this project.
      */
     public function isOwnedBy(User $user): bool

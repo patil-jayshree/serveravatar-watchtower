@@ -6,6 +6,7 @@ use App\Models\Project;
 use App\Models\RequestEvent;
 use App\Models\QueryEvent;
 use App\Models\JobEvent;
+use App\Models\CommandEvent;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -67,6 +68,7 @@ class PerformanceService
             'slow_requests' => $this->getSlowRequestMetrics(),
             'memory' => $this->getMemoryMetrics(),
             'sql_contribution' => $this->getSqlContribution(),
+            'commands' => $this->getCommandMetrics(),
         ];
     }
 
@@ -285,6 +287,33 @@ class PerformanceService
             'total_request_time_ms' => (int) $totalRequestTime,
             'sql_contribution_percent' => $sqlContribution,
             'query_count' => $sqlQueryCount,
+        ];
+    }
+
+    /**
+     * Get Artisan command metrics.
+     */
+    public function getCommandMetrics(): array
+    {
+        $query = CommandEvent::where('project_id', $this->project->id)
+            ->where('created_at', '>=', $this->from);
+
+        $total = (clone $query)->count();
+        $completed = (clone $query)->where('status', 'completed')->count();
+        $failed = (clone $query)->where('status', 'failed')->count();
+
+        $slowThreshold = (int) config('watchtower.command_monitoring.slow_threshold_ms', 1000);
+        $slow = (clone $query)->where('duration_ms', '>=', $slowThreshold)->count();
+
+        $avgDuration = (clone $query)->whereNotNull('duration_ms')->avg('duration_ms');
+
+        return [
+            'has_data' => $total > 0,
+            'total' => $total,
+            'completed' => $completed,
+            'failed' => $failed,
+            'slow' => $slow,
+            'avg_duration_ms' => $avgDuration ? round($avgDuration) : 0,
         ];
     }
 
@@ -578,6 +607,33 @@ class PerformanceService
                     'status' => $job->status,
                     'duration_ms' => $job->duration_ms,
                     'created_at' => $job->created_at->toIso8601String(),
+                ];
+            })->toArray(),
+        ];
+    }
+
+    /**
+     * Get Artisan commands context for the performance overview.
+     */
+    public function getCommandsContext(): array
+    {
+        $commands = CommandEvent::where('project_id', $this->project->id)
+            ->where('created_at', '>=', $this->from)
+            ->orderByDesc('created_at')
+            ->limit(20)
+            ->get();
+
+        return [
+            'has_data' => $commands->isNotEmpty(),
+            'total_count' => $commands->count(),
+            'commands' => $commands->map(function ($cmd) {
+                return [
+                    'uuid' => $cmd->uuid,
+                    'command_name' => $cmd->command_name,
+                    'status' => $cmd->status,
+                    'duration_ms' => $cmd->duration_ms,
+                    'exit_code' => $cmd->exit_code,
+                    'created_at' => $cmd->created_at->toIso8601String(),
                 ];
             })->toArray(),
         ];

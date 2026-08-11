@@ -99,6 +99,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Slow Command Threshold (ms)
+    |--------------------------------------------------------------------------
+    |
+    | Commands with duration >= this threshold (in milliseconds) will be
+    | flagged as slow in the Commands dashboard.
+    |
+    */
+    'command_monitoring' => [
+        'slow_threshold_ms' => (int) env('WATCHTOWER_SLOW_COMMAND_THRESHOLD', 1000),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Footer
     |--------------------------------------------------------------------------
     */

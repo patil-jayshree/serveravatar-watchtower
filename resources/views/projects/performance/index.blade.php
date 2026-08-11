@@ -528,6 +528,43 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
             @endif
 
+            {{-- Commands Context --}}
+            @php $cmdCtx = $service->getCommandsContext(); @endphp
+            @if($cmdCtx['has_data'])
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow mb-8">
+                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Artisan Commands</h2>
+                            <span class="text-sm text-gray-500 dark:text-gray-400">{{ $cmdCtx['total_count'] }} executed</span>
+                        </div>
+                    </div>
+                    <div class="divide-y divide-gray-200 dark:divide-gray-700">
+                        @foreach(array_slice($cmdCtx['commands'], 0, 5) as $cmd)
+                            <div class="flex items-center justify-between px-6 py-3">
+                                <div class="flex items-center gap-3">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
+                                        @if($cmd['status'] === 'completed') bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400
+                                        @elseif($cmd['status'] === 'failed') bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400
+                                        @else bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 @endif">
+                                        {{ $cmd['status'] }}
+                                    </span>
+                                    <span class="text-sm font-mono text-gray-900 dark:text-white">{{ $cmd['command_name'] }}</span>
+                                </div>
+                                <div class="text-right flex items-center gap-3">
+                                    @if($cmd['duration_ms'] !== null)
+                                        <div class="text-sm text-gray-500 dark:text-gray-400">{{ number_format($cmd['duration_ms']) }} ms</div>
+                                    @endif
+                                    @if($cmd['exit_code'] !== null)
+                                        <span class="text-xs font-mono {{ $cmd['exit_code'] === 0 ? 'text-green-600' : 'text-red-600' }}">exit {{ $cmd['exit_code'] }}</span>
+                                    @endif
+                                    <div class="text-xs text-gray-400 dark:text-gray-500">{{ \Carbon\Carbon::parse($cmd['created_at'])->format('M j, H:i') }}</div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
             {{-- Job Context --}}
             @php $jobsCtx = $service->getJobsContext(); @endphp
             @if($jobsCtx['has_data'])

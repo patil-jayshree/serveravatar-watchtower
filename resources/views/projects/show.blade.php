@@ -58,6 +58,9 @@
             <a href="{{ route('organizations.projects.jobs.index', [$organization, $project]) }}" class="px-4 py-2 text-sm font-medium border-b-2 {{ request()->routeIs('organizations.projects.jobs.*') ? 'border-primary-600 text-primary-600 dark:text-primary-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' }}">
                 Jobs
             </a>
+            <a href="{{ route('organizations.projects.commands.index', [$organization, $project]) }}" class="px-4 py-2 text-sm font-medium border-b-2 {{ request()->routeIs('organizations.projects.commands.*') ? 'border-primary-600 text-primary-600 dark:text-primary-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' }}">
+                Commands
+            </a>
             <a href="{{ route('organizations.projects.logs.index', [$organization, $project]) }}" class="px-4 py-2 text-sm font-medium border-b-2 {{ request()->routeIs('organizations.projects.logs.*') ? 'border-primary-600 text-primary-600 dark:text-primary-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' }}">
                 Logs
             </a>
@@ -284,6 +287,47 @@
                 <div>
                     <p class="text-sm text-gray-500 dark:text-gray-400">Avg Duration</p>
                     <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ $avgJobDuration }} ms</p>
+                </div>
+            </div>
+        </div>
+        @endif
+
+        {{-- Artisan Commands Summary (only if connected) --}}
+        @if($project->is_connected)
+        @php
+            $totalCommands = $project->commandEvents()->count();
+            $completedCommands = $project->commandEvents()->where('status', 'completed')->count();
+            $failedCommands = $project->commandEvents()->where('status', 'failed')->count();
+            $slowCommands = $project->commandEvents()->where('duration_ms', '>=', (int) config('watchtower.command_monitoring.slow_threshold_ms', 1000))->count();
+            $avgCommandDuration = round($project->commandEvents()->whereNotNull('duration_ms')->avg('duration_ms') ?? 0);
+        @endphp
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Artisan Commands</h2>
+                <a href="{{ route('organizations.projects.commands.index', [$organization, $project]) }}" class="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
+                    View All →
+                </a>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-6">
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Total Commands</p>
+                    <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ number_format($totalCommands) }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Completed</p>
+                    <p class="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">{{ number_format($completedCommands) }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Failed Commands</p>
+                    <p class="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">{{ number_format($failedCommands) }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Slow</p>
+                    <p class="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">{{ number_format($slowCommands) }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Avg Duration</p>
+                    <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ $avgCommandDuration > 0 ? $avgCommandDuration . ' ms' : '—' }}</p>
                 </div>
             </div>
         </div>

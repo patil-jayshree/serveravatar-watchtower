@@ -44,6 +44,7 @@ class ExceptionOccurrence extends Model
         'project_id',
         'request_id',
         'job_uuid',
+        'command_uuid',
         'message',
         'stack_trace',
         'file',
@@ -90,6 +91,14 @@ class ExceptionOccurrence extends Model
     }
 
     /**
+     * Get the related command event if this exception originated from an Artisan command.
+     */
+    public function commandEvent(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(\App\Models\CommandEvent::class, 'command_uuid', 'uuid');
+    }
+
+    /**
      * Check if this exception originated from a job.
      */
     public function isFromJob(): bool
@@ -98,10 +107,22 @@ class ExceptionOccurrence extends Model
     }
 
     /**
-     * Get the source of this exception (job, http, or other).
+     * Check if this exception originated from an Artisan command.
+     */
+    public function isFromCommand(): bool
+    {
+        return $this->command_uuid !== null;
+    }
+
+    /**
+     * Get the source of this exception (job, command, http, or other).
      */
     public function getSourceAttribute(): string
     {
+        if ($this->isFromCommand()) {
+            return 'command';
+        }
+
         if ($this->isFromJob()) {
             return 'job';
         }
@@ -114,10 +135,14 @@ class ExceptionOccurrence extends Model
     }
 
     /**
-     * Get the display name for the source (job name or request path).
+     * Get the display name for the source (command name, job name, or request path).
      */
     public function getSourceDisplayAttribute(): ?string
     {
+        if ($this->isFromCommand()) {
+            return class_basename($this->commandEvent?->command_name ?? 'UnknownCommand');
+        }
+
         if ($this->isFromJob()) {
             return $this->controller_action ?? class_basename($this->jobEvent?->job_name ?? 'UnknownJob');
         }

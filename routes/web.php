@@ -105,6 +105,10 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/projects/{project}/jobs', [JobEventController::class, 'index'])->name('projects.jobs.index');
             Route::get('/projects/{project}/jobs/{uuid}', [JobEventController::class, 'show'])->name('projects.jobs.show');
 
+            // Command Events Routes
+            Route::get('/projects/{project}/commands', [\App\Http\Controllers\Project\CommandEventController::class, 'index'])->name('projects.commands.index');
+            Route::get('/projects/{project}/commands/{uuid}', [\App\Http\Controllers\Project\CommandEventController::class, 'show'])->name('projects.commands.show');
+
             // Log Events Routes
             Route::get('/projects/{project}/logs', [LogEventController::class, 'index'])->name('projects.logs.index');
             Route::get('/projects/{project}/logs/{uuid}', [LogEventController::class, 'show'])->name('projects.logs.show');

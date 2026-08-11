@@ -308,6 +308,63 @@
             </div>
             @endif
 
+            {{-- Artisan Commands --}}
+            @php
+                $relatedCommands = $project->commandEvents()
+                    ->where('request_id', $event->request_id)
+                    ->orderByDesc('created_at')
+                    ->limit(10)
+                    ->get();
+            @endphp
+            @if($relatedCommands->count() > 0)
+            <div class="bg-orange-50 dark:bg-orange-900/10 rounded-xl shadow-sm border border-orange-200 dark:border-orange-800 p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-semibold text-orange-900 dark:text-orange-400">
+                        Artisan Commands
+                    </h2>
+                    <div class="flex items-center gap-3">
+                        <span class="text-sm text-orange-700 dark:text-orange-300">
+                            {{ $relatedCommands->count() }} commands
+                        </span>
+                        <a href="{{ route('organizations.projects.commands.index', [$organization, $project]) }}"
+                           class="text-orange-600 hover:text-orange-800 dark:text-orange-400 dark:hover:text-orange-300 text-sm font-medium">
+                            View All →
+                        </a>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    @foreach($relatedCommands as $cmd)
+                        <a href="{{ route('organizations.projects.commands.show', [$organization, $project, $cmd->uuid]) }}"
+                           class="block p-3 bg-white dark:bg-gray-800 rounded-lg border border-orange-100 dark:border-orange-800 hover:border-orange-300 dark:hover:border-orange-700 transition-colors">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <span class="font-medium text-sm text-gray-900 dark:text-gray-100 font-mono">
+                                        {{ $cmd->command_name }}
+                                    </span>
+                                    <span class="ml-2 px-2 py-0.5 rounded text-xs font-medium
+                                        @if($cmd->status === 'completed') bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400
+                                        @elseif($cmd->status === 'failed') bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400
+                                        @else bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400 @endif">
+                                        {{ ucfirst($cmd->status) }}
+                                    </span>
+                                </div>
+                                <div class="flex items-center gap-2 flex-shrink-0">
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">
+                                        {{ $cmd->duration_formatted }}
+                                    </span>
+                                    @if($cmd->exit_code !== null)
+                                        <span class="text-xs font-mono {{ $cmd->exit_code === 0 ? 'text-green-600' : 'text-red-600' }}">
+                                            exit {{ $cmd->exit_code }}
+                                        </span>
+                                    @endif
+                                </div>
+                            </div>
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+            @endif
+
             {{-- Application Logs --}}
             @php
                 $relatedLogs = $project->logEvents()

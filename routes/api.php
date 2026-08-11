@@ -48,6 +48,11 @@ Route::prefix('agent')->name('api.agent.')->group(function () {
     Route::post('/logs', [LogController::class, 'store'])
         ->middleware('agent.token.telemetry')
         ->name('logs.store');
+
+    // Command telemetry
+    Route::post('/commands', [\App\Http\Controllers\Api\Agent\CommandController::class, 'store'])
+        ->middleware('agent.token.telemetry')
+        ->name('commands.store');
 });
 
 // Authenticated project API routes
