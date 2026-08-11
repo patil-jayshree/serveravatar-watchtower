@@ -119,7 +119,7 @@ class LogEventController extends Controller
         $relatedExceptionGroup = $log->getRelatedExceptionGroup();
 
         // Get other logs from the same request
-        $relatedLogs = [];
+        $relatedLogs = collect();
         if ($log->request_id) {
             $relatedLogs = LogEvent::where('project_id', $project->id)
                 ->where('request_id', $log->request_id)
