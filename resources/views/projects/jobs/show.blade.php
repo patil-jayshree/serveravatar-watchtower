@@ -227,176 +227,36 @@
                 </div>
             </div>
 
-            {{-- Failed Job Details --}}
-            @if($job->isFailed())
-                @php
-                    $hasExceptionData = $job->exception_class || $job->exception_message || $job->stack_trace;
-                @endphp
-
-                @if($relatedExceptionGroup)
-                    {{-- Exception found in monitoring system --}}
-                    <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
-                        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
-                            <div class="flex items-center gap-3">
-                                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Exception</h2>
-                                <span class="px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
-                                    Failed
-                                </span>
-                                <span class="px-2 py-1 rounded text-xs font-medium
-                                    {{ $relatedExceptionGroup->isOpen() ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' }}">
-                                    {{ ucfirst($relatedExceptionGroup->status) }}
-                                </span>
-                            </div>
-                            <a href="{{ route('organizations.projects.exceptions.show', [$organization, $project, $relatedExceptionGroup->uuid]) }}"
-                               class="inline-flex items-center gap-1 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-md">
-                                View Full Exception
-                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                </svg>
-                            </a>
+            {{-- Exception Summary (compact) - only for failed jobs --}}
+            @if($job->isFailed() && $relatedExceptionGroup)
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
+                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Exception</h2>
+                            <span class="px-2 py-1 rounded text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400">
+                                {{ class_basename($relatedExceptionGroup->exception_type) }}
+                            </span>
+                            <span class="px-2 py-1 rounded text-xs font-medium
+                                {{ $relatedExceptionGroup->isOpen() ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' : 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' }}">
+                                {{ ucfirst($relatedExceptionGroup->status) }}
+                            </span>
                         </div>
-                        <div class="p-6 space-y-5">
-                            {{-- Exception Overview --}}
-                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <div>
-                                    <div class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Type</div>
-                                    <div class="text-sm font-mono text-red-600 dark:text-red-400 truncate" title="{{ $relatedExceptionGroup->exception_type }}">
-                                        {{ class_basename($relatedExceptionGroup->exception_type) }}
-                                    </div>
-                                </div>
-                                @if($relatedExceptionGroup->normalized_message)
-                                    <div class="md:col-span-2">
-                                        <div class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Message</div>
-                                        <div class="text-sm text-gray-800 dark:text-gray-200 truncate" title="{{ $relatedExceptionGroup->normalized_message }}">
-                                            {{ $relatedExceptionGroup->normalized_message }}
-                                        </div>
-                                    </div>
-                                @endif
-                                <div>
-                                    <div class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Occurrences</div>
-                                    <div class="text-sm font-bold text-gray-900 dark:text-white">
-                                        {{ $relatedExceptionGroup->occurrence_count }}
-                                    </div>
-                                </div>
-                            </div>
-
-                            {{-- Location --}}
-                            @if($job->exception_file)
-                                <div>
-                                    <div class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Location</div>
-                                    <div class="text-sm font-mono text-gray-700 dark:text-gray-300">
-                                        {{ $job->exception_file }}
-                                        @if($job->exception_line)
-                                            <span class="text-gray-500">:{{ $job->exception_line }}</span>
-                                        @endif
-                                    </div>
-                                </div>
-                            @endif
-
-                            {{-- Exception Message from this job --}}
-                            @if($job->exception_message)
-                                <div>
-                                    <div class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Exception Message</div>
-                                    <div class="text-sm font-mono text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/10 rounded p-3 border border-red-100 dark:border-red-800">
-                                        {{ $job->exception_message }}
-                                    </div>
-                                </div>
-                            @endif
-
-                            {{-- Stack Trace from this job --}}
-                            @if($job->stack_trace)
-                                <div>
-                                    <div class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-2">Stack Trace</div>
-                                    <pre class="text-xs font-mono text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900 rounded p-4 overflow-x-auto whitespace-pre-wrap break-all max-h-80 border border-gray-200 dark:border-gray-700">{{ $job->stack_trace }}</pre>
-                                </div>
-                            @endif
-
-                            {{-- Latest Occurrence Info --}}
-                            @if($relatedExceptionGroup->latestOccurrence)
-                                @php
-                                    $latest = $relatedExceptionGroup->latestOccurrence;
-                                @endphp
-                                <div class="bg-gray-50 dark:bg-gray-900/50 rounded-lg p-4 border border-gray-200 dark:border-gray-700">
-                                    <div class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-2">Latest Occurrence</div>
-                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                                        @if($latest->occurred_at)
-                                            <div>
-                                                <div class="text-xs text-gray-400 dark:text-gray-500 uppercase mb-0.5">Last Seen</div>
-                                                <div class="text-gray-700 dark:text-gray-300">{{ $latest->occurred_at->format('M j, Y H:i:s') }}</div>
-                                            </div>
-                                        @endif
-                                        @if($latest->method || $latest->path)
-                                            <div class="md:col-span-2">
-                                                <div class="text-xs text-gray-400 dark:text-gray-500 uppercase mb-0.5">Request</div>
-                                                <div class="text-gray-700 dark:text-gray-300 font-mono">
-                                                    {{ $latest->method ?? '' }} {{ $latest->path ?? '' }}
-                                                </div>
-                                            </div>
-                                        @endif
-                                        @if($latest->status_code)
-                                            <div>
-                                                <div class="text-xs text-gray-400 dark:text-gray-500 uppercase mb-0.5">Status</div>
-                                                <div>
-                                                    <span class="px-2 py-0.5 rounded text-xs font-medium
-                                                        @if($latest->status_code >= 500) bg-red-100 text-red-800
-                                                        @elseif($latest->status_code >= 400) bg-yellow-100 text-yellow-800
-                                                        @else bg-green-100 text-green-800 @endif">
-                                                        {{ $latest->status_code }}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        @endif
-                                    </div>
-                                </div>
-                            @endif
-                        </div>
+                        <a href="{{ route('organizations.projects.exceptions.show', [$organization, $project, $relatedExceptionGroup->uuid]) }}"
+                           class="inline-flex items-center gap-1 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium px-4 py-2 rounded-md">
+                            View Full Exception
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            </svg>
+                        </a>
                     </div>
-                @elseif($hasExceptionData)
-                    {{-- No matching exception group found, show raw exception data --}}
-                    <div class="bg-red-50 dark:bg-red-900/10 rounded-lg shadow border border-red-200 dark:border-red-800">
-                        <div class="px-6 py-4 border-b border-red-200 dark:border-red-800">
-                            <h2 class="text-lg font-semibold text-red-900 dark:text-red-400">Exception Details</h2>
-                        </div>
-                        <div class="p-6">
-                            {{-- Exception Type --}}
-                            <div class="mb-4">
-                                <div class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Exception</div>
-                                <div class="text-sm font-mono text-red-600 dark:text-red-400">
-                                    {{ $job->exception_class }}
-                                </div>
-                            </div>
-
-                            {{-- Exception Message --}}
-                            @if($job->exception_message)
-                                <div class="mb-4">
-                                    <div class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Message</div>
-                                    <div class="text-sm text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800 rounded p-3 border border-red-100 dark:border-red-800">
-                                        {{ $job->exception_message }}
-                                    </div>
-                                </div>
-                            @endif
-
-                            {{-- Location --}}
-                            <div class="mb-4">
-                                <div class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Location</div>
-                                <div class="text-sm font-mono text-gray-700 dark:text-gray-300">
-                                    {{ $job->exception_file }}
-                                    @if($job->exception_line)
-                                        <span class="text-gray-500">:{{ $job->exception_line }}</span>
-                                    @endif
-                                </div>
-                            </div>
-
-                            {{-- Stack Trace --}}
-                            @if($job->stack_trace)
-                                <div>
-                                    <div class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-2">Stack Trace</div>
-                                    <pre class="text-xs font-mono text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-900 rounded p-4 overflow-x-auto whitespace-pre-wrap break-all max-h-96 border border-red-100 dark:border-red-800">{{ $job->stack_trace }}</pre>
-                                </div>
-                            @endif
-                        </div>
+                    <div class="p-6">
+                        @if($job->exception_message)
+                            <p class="text-sm font-mono text-red-600 dark:text-red-400">
+                                {{ $job->exception_message }}
+                            </p>
+                        @endif
                     </div>
-                @endif
+                </div>
             @endif
         </div>
     </div>
