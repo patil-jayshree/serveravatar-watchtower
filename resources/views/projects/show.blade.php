@@ -58,6 +58,9 @@
             <a href="{{ route('organizations.projects.jobs.index', [$organization, $project]) }}" class="px-4 py-2 text-sm font-medium border-b-2 {{ request()->routeIs('organizations.projects.jobs.*') ? 'border-primary-600 text-primary-600 dark:text-primary-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' }}">
                 Jobs
             </a>
+            <a href="{{ route('organizations.projects.logs.index', [$organization, $project]) }}" class="px-4 py-2 text-sm font-medium border-b-2 {{ request()->routeIs('organizations.projects.logs.*') ? 'border-primary-600 text-primary-600 dark:text-primary-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' }}">
+                Logs
+            </a>
             @endif
         </div>
         {{-- Success Message --}}
@@ -278,6 +281,50 @@
                 <div>
                     <p class="text-sm text-gray-500 dark:text-gray-400">Avg Duration</p>
                     <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ $avgJobDuration }} ms</p>
+                </div>
+            </div>
+        </div>
+        @endif
+
+        {{-- Log Monitoring Summary (only if connected) --}}
+        @if($project->is_connected)
+        @php
+            $totalLogs = $project->logEvents()->count();
+            $errorLogs = $project->logEvents()->whereIn('level', ['ERROR', 'CRITICAL', 'ALERT', 'EMERGENCY'])->count();
+            $warningLogs = $project->logEvents()->where('level', 'WARNING')->count();
+            $logsLast24h = $project->logEvents()->where('logged_at', '>=', now()->subDay())->count();
+            $errorLogsLast24h = $project->logEvents()
+                ->whereIn('level', ['ERROR', 'CRITICAL', 'ALERT', 'EMERGENCY'])
+                ->where('logged_at', '>=', now()->subDay())
+                ->count();
+        @endphp
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Application Logs</h2>
+                <a href="{{ route('organizations.projects.logs.index', [$organization, $project]) }}" class="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
+                    View All →
+                </a>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-6">
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Total Logs</p>
+                    <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ number_format($totalLogs) }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Errors</p>
+                    <p class="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">{{ number_format($errorLogs) }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Warnings</p>
+                    <p class="text-2xl font-bold text-yellow-600 dark:text-yellow-400 mt-1">{{ number_format($warningLogs) }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Last 24h</p>
+                    <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ number_format($logsLast24h) }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Errors (24h)</p>
+                    <p class="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">{{ number_format($errorLogsLast24h) }}</p>
                 </div>
             </div>
         </div>

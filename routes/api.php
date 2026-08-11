@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\Agent\ConnectionController;
 use App\Http\Controllers\Api\Agent\ExceptionController;
 use App\Http\Controllers\Api\Agent\JobController;
+use App\Http\Controllers\Api\Agent\LogController;
 use App\Http\Controllers\Api\Agent\QueryController;
 use App\Http\Controllers\Api\Agent\TelemetryController;
 use Illuminate\Http\Request;
@@ -42,6 +43,11 @@ Route::prefix('agent')->name('api.agent.')->group(function () {
     Route::post('/jobs', [JobController::class, 'store'])
         ->middleware('agent.token.telemetry')
         ->name('jobs.store');
+
+    // Log telemetry
+    Route::post('/logs', [LogController::class, 'store'])
+        ->middleware('agent.token.telemetry')
+        ->name('logs.store');
 });
 
 Route::get('/user', function (Request $request) {

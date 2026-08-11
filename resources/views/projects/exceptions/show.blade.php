@@ -285,6 +285,41 @@
         </div>
     @endif
 
+    <!-- Related Logs -->
+    @php
+        $relatedLogs = $group->getRelatedLogs(10);
+    @endphp
+    @if($relatedLogs->isNotEmpty())
+    <div class="bg-blue-50 dark:bg-blue-900/10 rounded-lg shadow border border-blue-200 dark:border-blue-800">
+        <div class="px-6 py-4 border-b border-blue-200 dark:border-blue-800">
+            <h2 class="text-lg font-medium text-blue-900 dark:text-blue-400">Related Logs</h2>
+        </div>
+        <div class="divide-y divide-blue-100 dark:divide-blue-800">
+            @foreach($relatedLogs as $log)
+                <a href="{{ route('organizations.projects.logs.show', [$organization, $project, $log->uuid]) }}"
+                   class="block px-6 py-3 hover:bg-blue-100/50 dark:hover:bg-blue-900/30 transition-colors">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $log->getLevelBadgeClass() }}">
+                                {{ $log->level }}
+                            </span>
+                            <span class="text-sm text-gray-900 dark:text-gray-100 truncate max-w-lg">
+                                {{ Str::limit($log->message, 70) }}
+                            </span>
+                        </div>
+                        <div class="flex items-center gap-3 flex-shrink-0">
+                            @if($log->channel)
+                                <span class="text-xs text-gray-500 dark:text-gray-400 font-mono">{{ $log->channel }}</span>
+                            @endif
+                            <span class="text-xs text-gray-400">{{ $log->logged_at->format('H:i:s') }}</span>
+                        </div>
+                    </div>
+                </a>
+            @endforeach
+        </div>
+    </div>
+    @endif
+
     <!-- Occurrence History -->
     <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">

@@ -142,6 +142,14 @@ class Project extends Model
     }
 
     /**
+     * Get the log events for this project.
+     */
+    public function logEvents(): HasMany
+    {
+        return $this->hasMany(LogEvent::class);
+    }
+
+    /**
      * Check if a given user is the owner of this project.
      */
     public function isOwnedBy(User $user): bool

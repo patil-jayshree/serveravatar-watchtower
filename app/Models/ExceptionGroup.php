@@ -93,6 +93,19 @@ class ExceptionGroup extends Model
     }
 
     /**
+     * Get logs related to this exception group.
+     */
+    public function getRelatedLogs(int $limit = 10)
+    {
+        return LogEvent::where('project_id', $this->project_id)
+            ->where('exception_class', $this->exception_type)
+            ->where('exception_message', $this->normalized_message)
+            ->orderByDesc('logged_at')
+            ->limit($limit)
+            ->get();
+    }
+
+    /**
      * Check if the group is open.
      */
     public function isOpen(): bool

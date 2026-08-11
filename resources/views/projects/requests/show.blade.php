@@ -307,6 +307,53 @@
                 </div>
             </div>
             @endif
+
+            {{-- Application Logs --}}
+            @php
+                $relatedLogs = $project->logEvents()
+                    ->where('request_id', $event->request_id)
+                    ->orderByDesc('logged_at')
+                    ->limit(10)
+                    ->get();
+            @endphp
+            @if($relatedLogs->count() > 0)
+            <div class="bg-blue-50 dark:bg-blue-900/10 rounded-xl shadow-sm border border-blue-200 dark:border-blue-800 p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-semibold text-blue-900 dark:text-blue-400">
+                        Application Logs
+                    </h2>
+                    <div class="flex items-center gap-3">
+                        <span class="text-sm text-blue-700 dark:text-blue-300">
+                            {{ $relatedLogs->count() }} logs
+                        </span>
+                        <a href="{{ route('organizations.projects.logs.index', [$organization, $project]) }}?request_id={{ $event->request_id }}"
+                           class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm font-medium">
+                            View All →
+                        </a>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    @foreach($relatedLogs as $log)
+                        <a href="{{ route('organizations.projects.logs.show', [$organization, $project, $log->uuid]) }}"
+                           class="block p-3 bg-white dark:bg-gray-800 rounded-lg border border-blue-100 dark:border-blue-800 hover:border-blue-300 dark:hover:border-blue-700 transition-colors">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ $log->getLevelBadgeClass() }}">
+                                        {{ $log->level }}
+                                    </span>
+                                    <span class="text-sm text-gray-900 dark:text-gray-100 truncate max-w-md">
+                                        {{ Str::limit($log->message, 60) }}
+                                    </span>
+                                </div>
+                                <span class="text-xs text-gray-500 dark:text-gray-400 flex-shrink-0 ml-2">
+                                    {{ $log->logged_at->format('H:i:s') }}
+                                </span>
+                            </div>
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+            @endif
         </div>
     </div>
 </div>
