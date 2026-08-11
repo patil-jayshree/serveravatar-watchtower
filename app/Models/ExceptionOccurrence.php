@@ -97,6 +97,41 @@ class ExceptionOccurrence extends Model
     }
 
     /**
+     * Get the related request event with fallback matching.
+     *
+     * This handles cases where the request_id in the exception doesn't
+     * exactly match the stored request (e.g., due to duplicate suffix being
+     * added to the request_id after the exception was captured).
+     *
+     * @return RequestEvent|null
+     */
+    public function getRelatedRequestEvent(): ?RequestEvent
+    {
+        // Try exact request_id match first
+        $event = $this->requestEvent()->first();
+        if ($event) {
+            return $event;
+        }
+
+        // Fallback: match by method + path + timestamp (within 5 seconds)
+        if (empty($this->method) || empty($this->path)) {
+            return null;
+        }
+
+        return RequestEvent::where('project_id', $this->project_id)
+            ->where('method', strtoupper($this->method))
+            ->where('path', $this->path)
+            ->when($this->occurred_at, function ($query) {
+                $query->whereBetween('requested_at', [
+                    $this->occurred_at->subSeconds(5),
+                    $this->occurred_at->addSeconds(5),
+                ]);
+            })
+            ->orderBy('requested_at', 'desc')
+            ->first();
+    }
+
+    /**
      * Check if this occurrence has an associated request.
      */
     public function hasRequest(): bool

@@ -113,7 +113,10 @@
 
     <!-- Latest Occurrence Detail -->
     @if($group->latestOccurrence)
-        @php $latest = $group->latestOccurrence; @endphp
+        @php
+            $latest = $group->latestOccurrence;
+            $latestRelatedRequest = $latest->getRelatedRequestEvent();
+        @endphp
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow mb-8">
             <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
                 <h2 class="text-lg font-medium text-gray-900 dark:text-white">Latest Occurrence</h2>
@@ -123,66 +126,69 @@
             </div>
 
             <!-- Request Context -->
-            @if($latest->hasRequest())
+            @if($latest->hasRequest() || $latestRelatedRequest)
                 <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div>
                             <div class="metadata-label">Request ID</div>
-                            <div class="metadata-value font-mono">{{ $latest->request_id }}</div>
+                            <div class="metadata-value font-mono">{{ $latestRelatedRequest ? $latestRelatedRequest->request_id : $latest->request_id }}</div>
                         </div>
-                        @if($latest->method)
+                        @if($latestRelatedRequest ? $latestRelatedRequest->method : $latest->method)
                             <div>
                                 <div class="metadata-label">Method</div>
-                                <div class="metadata-value">{{ $latest->method }}</div>
+                                <div class="metadata-value">{{ $latestRelatedRequest ? $latestRelatedRequest->method : $latest->method }}</div>
                             </div>
                         @endif
-                        @if($latest->path)
+                        @if($latestRelatedRequest ? $latestRelatedRequest->path : $latest->path)
                             <div>
                                 <div class="metadata-label">Path</div>
-                                <div class="metadata-value font-mono truncate">{{ $latest->path }}</div>
+                                <div class="metadata-value font-mono truncate">{{ $latestRelatedRequest ? $latestRelatedRequest->path : $latest->path }}</div>
                             </div>
                         @endif
-                        @if($latest->status_code)
+                        @php
+                            $latestStatus = $latestRelatedRequest ? $latestRelatedRequest->status_code : $latest->status_code;
+                        @endphp
+                        @if($latestStatus)
                             <div>
                                 <div class="metadata-label">Status</div>
                                 <div class="metadata-value">
                                     <span class="px-2 py-0.5 rounded text-xs font-medium
-                                        @if($latest->status_code >= 500) bg-red-100 text-red-800
-                                        @elseif($latest->status_code >= 400) bg-yellow-100 text-yellow-800
+                                        @if($latestStatus >= 500) bg-red-100 text-red-800
+                                        @elseif($latestStatus >= 400) bg-yellow-100 text-yellow-800
                                         @else bg-green-100 text-green-800 @endif">
-                                        {{ $latest->status_code }}
+                                        {{ $latestStatus }}
                                     </span>
                                 </div>
                             </div>
                         @endif
-                        @if($latest->route_name)
+                        @if($latestRelatedRequest ? $latestRelatedRequest->route_name : $latest->route_name)
                             <div>
                                 <div class="metadata-label">Route</div>
-                                <div class="metadata-value font-mono">{{ $latest->route_name }}</div>
+                                <div class="metadata-value font-mono">{{ $latestRelatedRequest ? $latestRelatedRequest->route_name : $latest->route_name }}</div>
                             </div>
                         @endif
-                        @if($latest->controller_action)
+                        @if($latestRelatedRequest ? $latestRelatedRequest->controller_action : $latest->controller_action)
                             <div>
                                 <div class="metadata-label">Controller</div>
-                                <div class="metadata-value font-mono">{{ $latest->controller_action }}</div>
+                                <div class="metadata-value font-mono">{{ $latestRelatedRequest ? $latestRelatedRequest->controller_action : $latest->controller_action }}</div>
                             </div>
                         @endif
-                        @if($latest->host)
+                        @if($latestRelatedRequest ? $latestRelatedRequest->host : $latest->host)
                             <div>
                                 <div class="metadata-label">Host</div>
-                                <div class="metadata-value">{{ $latest->host }}</div>
+                                <div class="metadata-value">{{ $latestRelatedRequest ? $latestRelatedRequest->host : $latest->host }}</div>
                             </div>
                         @endif
-                        @if($latest->environment)
+                        @if($latestRelatedRequest ? $latestRelatedRequest->environment : $latest->environment)
                             <div>
                                 <div class="metadata-label">Environment</div>
-                                <div class="metadata-value">{{ $latest->environment }}</div>
+                                <div class="metadata-value">{{ $latestRelatedRequest ? $latestRelatedRequest->environment : $latest->environment }}</div>
                             </div>
                         @endif
                     </div>
-                    @if($latest->request_id)
+                    @if($latestRelatedRequest)
                         <div class="mt-3">
-                            <a href="{{ route('organizations.projects.requests.show', [$organization, $project, $latest->request_id]) }}"
+                            <a href="{{ route('organizations.projects.requests.show', [$organization, $project, $latestRelatedRequest->uuid]) }}"
                                class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
                                 View Request →
                             </a>
@@ -275,24 +281,32 @@
                 </thead>
                 <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                     @foreach($occurrences as $occurrence)
+                        @php
+                            $relatedRequest = $occurrence->getRelatedRequestEvent();
+                        @endphp
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                 {{ $occurrence->occurred_at->format('M j, Y H:i:s') }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                @if($occurrence->status_code)
+                                @php
+                                    $displayStatus = $occurrence->status_code ?? $relatedRequest?->status_code;
+                                @endphp
+                                @if($displayStatus)
                                     <span class="px-2 py-0.5 rounded text-xs font-medium
-                                        @if($occurrence->status_code >= 500) bg-red-100 text-red-800
-                                        @elseif($occurrence->status_code >= 400) bg-yellow-100 text-yellow-800
+                                        @if($displayStatus >= 500) bg-red-100 text-red-800
+                                        @elseif($displayStatus >= 400) bg-yellow-100 text-yellow-800
                                         @else bg-green-100 text-green-800 @endif">
-                                        {{ $occurrence->status_code }}
+                                        {{ $displayStatus }}
                                     </span>
                                 @else
                                     <span class="text-gray-400">—</span>
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-500 dark:text-gray-400">
-                                @if($occurrence->request_id)
+                                @if($relatedRequest)
+                                    {{ Str::limit($relatedRequest->request_id, 12) }}
+                                @elseif($occurrence->request_id)
                                     {{ Str::limit($occurrence->request_id, 12) }}
                                 @else
                                     <span class="text-gray-400">—</span>
@@ -310,8 +324,8 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                @if($occurrence->request_id)
-                                    <a href="{{ route('organizations.projects.requests.show', [$organization, $project, $occurrence->request_id]) }}"
+                                @if($relatedRequest)
+                                    <a href="{{ route('organizations.projects.requests.show', [$organization, $project, $relatedRequest->uuid]) }}"
                                        class="text-indigo-600 hover:text-indigo-800 font-medium">
                                         View Request →
                                     </a>

@@ -130,12 +130,28 @@
 
             {{-- Related Exceptions --}}
             @php
+                // First try exact request_id match
                 $relatedExceptions = $project->exceptionOccurrences()
                     ->where('request_id', $event->request_id)
                     ->with('exceptionGroup')
                     ->orderByDesc('occurred_at')
                     ->limit(5)
                     ->get();
+
+                // Fallback: match by method + path + timestamp if no exact matches
+                if ($relatedExceptions->isEmpty()) {
+                    $relatedExceptions = $project->exceptionOccurrences()
+                        ->where('method', $event->method)
+                        ->where('path', $event->path)
+                        ->whereBetween('occurred_at', [
+                            $event->requested_at->subSeconds(5),
+                            $event->requested_at->addSeconds(5),
+                        ])
+                        ->with('exceptionGroup')
+                        ->orderByDesc('occurred_at')
+                        ->limit(5)
+                        ->get();
+                }
             @endphp
             @if($relatedExceptions->count() > 0)
             <div class="bg-red-50 dark:bg-red-900/10 rounded-xl shadow-sm border border-red-200 dark:border-red-800 p-6">
