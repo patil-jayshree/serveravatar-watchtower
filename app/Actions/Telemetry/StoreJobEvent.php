@@ -10,6 +10,10 @@ use Illuminate\Support\Str;
 
 class StoreJobEvent
 {
+    public function __construct(
+        protected StoreException $storeException,
+    ) {}
+
     /**
      * Store a job event from the agent.
      */
@@ -27,7 +31,53 @@ class StoreJobEvent
         // Update based on event type
         $this->updateJobEvent($jobEvent, $data, $eventType, $status);
 
+        // If job failed, also create an exception occurrence
+        if ($eventType === 'failed') {
+            $this->storeFailedJobException($project, $jobEvent, $data);
+        }
+
         return $jobEvent;
+    }
+
+    /**
+     * Store a failed job as an exception occurrence.
+     */
+    protected function storeFailedJobException(Project $project, JobEvent $jobEvent, array $data): void
+    {
+        if (empty($data['exception_class'])) {
+            return;
+        }
+
+        $exceptionData = [
+            'request_id' => $data['request_id'] ?? null,
+            'job_uuid' => $jobEvent->uuid,
+            'exception_type' => $data['exception_class'],
+            'message' => $data['exception_message'] ?? $data['exception_class'],
+            'file' => $data['exception_file'] ?? $jobEvent->exception_file,
+            'line' => $data['exception_line'] ?? $jobEvent->exception_line,
+            'stack_trace' => $data['stack_trace'] ?? null,
+            'status_code' => null,
+            'method' => null,
+            'path' => null,
+            'route_name' => null,
+            'controller_action' => $data['job_name'] ?? null,
+            'host' => null,
+            'user_agent' => null,
+            'environment' => $data['environment'] ?? null,
+            'laravel_version' => $data['laravel_version'] ?? null,
+            'php_version' => $data['php_version'] ?? null,
+            'agent_version' => $data['agent_version'] ?? null,
+            'occurred_at' => isset($data['failed_at'])
+                ? \Carbon\Carbon::createFromTimestamp($data['failed_at'])
+                : null,
+        ];
+
+        try {
+            $this->storeException->execute($project, $exceptionData);
+        } catch (\Throwable $e) {
+            // Don't fail job event storage if exception storage fails
+            report($e);
+        }
     }
 
     /**
@@ -75,9 +125,7 @@ class StoreJobEvent
             }
         }
 
-        // Create new - but only for 'queued' events
-        // For started/completed/failed, we still need to create a record
-        // if no existing one is found
+        // Create new
         return JobEvent::create([
             'uuid' => $jobUuid ?? (string) Str::uuid(),
             'project_id' => $project->id,
@@ -114,7 +162,6 @@ class StoreJobEvent
 
             case 'started':
                 $updateData['started_at'] = $data['started_at'] ?? time();
-                // Update attempts to current
                 $updateData['attempts'] = (int) ($data['attempts'] ?? 1);
                 break;
 
@@ -122,7 +169,6 @@ class StoreJobEvent
                 $updateData['completed_at'] = $data['completed_at'] ?? time();
                 $updateData['attempts'] = (int) ($data['attempts'] ?? 1);
 
-                // Calculate duration if we have start time
                 if (isset($data['duration_ms'])) {
                     $updateData['duration_ms'] = $data['duration_ms'];
                 } elseif ($jobEvent->started_at && isset($data['completed_at'])) {
@@ -139,7 +185,6 @@ class StoreJobEvent
                 $updateData['exception_line'] = $data['exception_line'] ?? null;
                 $updateData['stack_trace'] = $this->truncateStackTrace($data['stack_trace'] ?? null);
 
-                // Calculate duration if we have start time
                 if (isset($data['duration_ms'])) {
                     $updateData['duration_ms'] = $data['duration_ms'];
                 } elseif ($jobEvent->started_at && isset($data['failed_at'])) {
@@ -172,7 +217,6 @@ class StoreJobEvent
             return null;
         }
 
-        // Limit to 50KB
         return mb_substr($stackTrace, 0, 51200);
     }
 }

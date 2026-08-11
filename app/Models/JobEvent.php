@@ -108,18 +108,26 @@ class JobEvent extends Model
     /**
      * Get the related exception group for failed jobs.
      *
-     * Matches by exception_class (job) = exception_type (group).
+     * Finds the exception occurrence with matching job_uuid, then returns its group.
+     * This ensures we get the EXACT exception caused by this specific job, not just
+     * any exception with the same exception type.
      */
     public function getRelatedExceptionGroup(): ?\App\Models\ExceptionGroup
     {
-        if (! $this->isFailed() || ! $this->exception_class) {
+        if (! $this->isFailed()) {
             return null;
         }
 
-        return \App\Models\ExceptionGroup::where('project_id', $this->project_id)
-            ->where('exception_type', $this->exception_class)
-            ->orderByDesc('last_seen_at')
+        // Find the exception occurrence created by this job (via job_uuid)
+        $occurrence = \App\Models\ExceptionOccurrence::where('job_uuid', $this->uuid)
+            ->where('project_id', $this->project_id)
             ->first();
+
+        if (! $occurrence) {
+            return null;
+        }
+
+        return $occurrence->exceptionGroup;
     }
 
     /**

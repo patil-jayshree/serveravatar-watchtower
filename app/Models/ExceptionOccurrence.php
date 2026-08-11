@@ -43,6 +43,7 @@ class ExceptionOccurrence extends Model
         'exception_group_uuid',
         'project_id',
         'request_id',
+        'job_uuid',
         'message',
         'stack_trace',
         'file',
@@ -78,6 +79,54 @@ class ExceptionOccurrence extends Model
     public function exceptionGroup(): BelongsTo
     {
         return $this->belongsTo(ExceptionGroup::class, 'exception_group_uuid');
+    }
+
+    /**
+     * Get the related job event if this exception originated from a job.
+     */
+    public function jobEvent(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(\App\Models\JobEvent::class, 'job_uuid', 'uuid');
+    }
+
+    /**
+     * Check if this exception originated from a job.
+     */
+    public function isFromJob(): bool
+    {
+        return $this->job_uuid !== null;
+    }
+
+    /**
+     * Get the source of this exception (job, http, or other).
+     */
+    public function getSourceAttribute(): string
+    {
+        if ($this->isFromJob()) {
+            return 'job';
+        }
+
+        if ($this->hasRequest()) {
+            return 'http';
+        }
+
+        return 'other';
+    }
+
+    /**
+     * Get the display name for the source (job name or request path).
+     */
+    public function getSourceDisplayAttribute(): ?string
+    {
+        if ($this->isFromJob()) {
+            return $this->controller_action ?? class_basename($this->jobEvent?->job_name ?? 'UnknownJob');
+        }
+
+        if ($this->hasRequest()) {
+            return ($this->method ? $this->method . ' ' : '') . ($this->path ?? $this->request_id ?? 'Unknown');
+        }
+
+        return null;
     }
 
     /**

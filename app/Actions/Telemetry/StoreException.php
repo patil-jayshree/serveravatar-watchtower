@@ -136,6 +136,7 @@ class StoreException
             'exception_group_uuid' => $group->uuid,
             'project_id' => $project->id,
             'request_id' => $data['request_id'] ?? null,
+            'job_uuid' => $data['job_uuid'] ?? null,
             'message' => $data['message'],
             'stack_trace' => $this->sanitizeStackTrace($data['stack_trace']),
             'file' => $data['file'],

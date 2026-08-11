@@ -125,74 +125,114 @@
                 </p>
             </div>
 
-            <!-- Request Context -->
-            @if($latest->hasRequest() || $latestRelatedRequest)
+            <!-- Source Context -->
+            @if($latest->isFromJob() || $latest->hasRequest() || $latestRelatedRequest)
                 <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        <div>
-                            <div class="metadata-label">Request ID</div>
-                            <div class="metadata-value font-mono">{{ $latestRelatedRequest ? $latestRelatedRequest->request_id : $latest->request_id }}</div>
-                        </div>
-                        @if($latestRelatedRequest ? $latestRelatedRequest->method : $latest->method)
-                            <div>
-                                <div class="metadata-label">Method</div>
-                                <div class="metadata-value">{{ $latestRelatedRequest ? $latestRelatedRequest->method : $latest->method }}</div>
-                            </div>
-                        @endif
-                        @if($latestRelatedRequest ? $latestRelatedRequest->path : $latest->path)
-                            <div>
-                                <div class="metadata-label">Path</div>
-                                <div class="metadata-value font-mono truncate">{{ $latestRelatedRequest ? $latestRelatedRequest->path : $latest->path }}</div>
-                            </div>
-                        @endif
+                    @if($latest->isFromJob())
                         @php
-                            $latestStatus = $latestRelatedRequest ? $latestRelatedRequest->status_code : $latest->status_code;
+                            $relatedJob = $latest->jobEvent;
                         @endphp
-                        @if($latestStatus)
-                            <div>
-                                <div class="metadata-label">Status</div>
-                                <div class="metadata-value">
-                                    <span class="px-2 py-0.5 rounded text-xs font-medium
-                                        @if($latestStatus >= 500) bg-red-100 text-red-800
-                                        @elseif($latestStatus >= 400) bg-yellow-100 text-yellow-800
-                                        @else bg-green-100 text-green-800 @endif">
-                                        {{ $latestStatus }}
-                                    </span>
-                                </div>
-                            </div>
-                        @endif
-                        @if($latestRelatedRequest ? $latestRelatedRequest->route_name : $latest->route_name)
-                            <div>
-                                <div class="metadata-label">Route</div>
-                                <div class="metadata-value font-mono">{{ $latestRelatedRequest ? $latestRelatedRequest->route_name : $latest->route_name }}</div>
-                            </div>
-                        @endif
-                        @if($latestRelatedRequest ? $latestRelatedRequest->controller_action : $latest->controller_action)
-                            <div>
-                                <div class="metadata-label">Controller</div>
-                                <div class="metadata-value font-mono">{{ $latestRelatedRequest ? $latestRelatedRequest->controller_action : $latest->controller_action }}</div>
-                            </div>
-                        @endif
-                        @if($latestRelatedRequest ? $latestRelatedRequest->host : $latest->host)
-                            <div>
-                                <div class="metadata-label">Host</div>
-                                <div class="metadata-value">{{ $latestRelatedRequest ? $latestRelatedRequest->host : $latest->host }}</div>
-                            </div>
-                        @endif
-                        @if($latestRelatedRequest ? $latestRelatedRequest->environment : $latest->environment)
-                            <div>
-                                <div class="metadata-label">Environment</div>
-                                <div class="metadata-value">{{ $latestRelatedRequest ? $latestRelatedRequest->environment : $latest->environment }}</div>
-                            </div>
-                        @endif
-                    </div>
-                    @if($latestRelatedRequest)
-                        <div class="mt-3">
-                            <a href="{{ route('organizations.projects.requests.show', [$organization, $project, $latestRelatedRequest->uuid]) }}"
-                               class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
-                                View Request →
-                            </a>
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400">
+                                Source: Job
+                            </span>
                         </div>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div>
+                                <div class="metadata-label">Job</div>
+                                <div class="metadata-value font-mono">{{ class_basename($relatedJob?->job_name ?? $latest->controller_action ?? 'UnknownJob') }}</div>
+                            </div>
+                            <div>
+                                <div class="metadata-label">Job ID</div>
+                                <div class="metadata-value font-mono">{{ $latest->job_uuid }}</div>
+                            </div>
+                            @if($latest->environment)
+                                <div>
+                                    <div class="metadata-label">Environment</div>
+                                    <div class="metadata-value">{{ $latest->environment }}</div>
+                                </div>
+                            @endif
+                        </div>
+                        @if($relatedJob)
+                            <div class="mt-3">
+                                <a href="{{ route('organizations.projects.jobs.show', [$organization, $project, $relatedJob->uuid]) }}"
+                                   class="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                                    View Job →
+                                </a>
+                            </div>
+                        @endif
+                    @elseif($latest->hasRequest() || $latestRelatedRequest)
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                                Source: HTTP Request
+                            </span>
+                        </div>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div>
+                                <div class="metadata-label">Request ID</div>
+                                <div class="metadata-value font-mono">{{ $latestRelatedRequest ? $latestRelatedRequest->request_id : $latest->request_id }}</div>
+                            </div>
+                            @if($latestRelatedRequest ? $latestRelatedRequest->method : $latest->method)
+                                <div>
+                                    <div class="metadata-label">Method</div>
+                                    <div class="metadata-value">{{ $latestRelatedRequest ? $latestRelatedRequest->method : $latest->method }}</div>
+                                </div>
+                            @endif
+                            @if($latestRelatedRequest ? $latestRelatedRequest->path : $latest->path)
+                                <div>
+                                    <div class="metadata-label">Path</div>
+                                    <div class="metadata-value font-mono truncate">{{ $latestRelatedRequest ? $latestRelatedRequest->path : $latest->path }}</div>
+                                </div>
+                            @endif
+                            @php
+                                $latestStatus = $latestRelatedRequest ? $latestRelatedRequest->status_code : $latest->status_code;
+                            @endphp
+                            @if($latestStatus)
+                                <div>
+                                    <div class="metadata-label">Status</div>
+                                    <div class="metadata-value">
+                                        <span class="px-2 py-0.5 rounded text-xs font-medium
+                                            @if($latestStatus >= 500) bg-red-100 text-red-800
+                                            @elseif($latestStatus >= 400) bg-yellow-100 text-yellow-800
+                                            @else bg-green-100 text-green-800 @endif">
+                                            {{ $latestStatus }}
+                                        </span>
+                                    </div>
+                                </div>
+                            @endif
+                            @if($latestRelatedRequest ? $latestRelatedRequest->route_name : $latest->route_name)
+                                <div>
+                                    <div class="metadata-label">Route</div>
+                                    <div class="metadata-value font-mono">{{ $latestRelatedRequest ? $latestRelatedRequest->route_name : $latest->route_name }}</div>
+                                </div>
+                            @endif
+                            @if($latestRelatedRequest ? $latestRelatedRequest->controller_action : $latest->controller_action)
+                                <div>
+                                    <div class="metadata-label">Controller</div>
+                                    <div class="metadata-value font-mono">{{ $latestRelatedRequest ? $latestRelatedRequest->controller_action : $latest->controller_action }}</div>
+                                </div>
+                            @endif
+                            @if($latestRelatedRequest ? $latestRelatedRequest->host : $latest->host)
+                                <div>
+                                    <div class="metadata-label">Host</div>
+                                    <div class="metadata-value">{{ $latestRelatedRequest ? $latestRelatedRequest->host : $latest->host }}</div>
+                                </div>
+                            @endif
+                            @if($latestRelatedRequest ? $latestRelatedRequest->environment : $latest->environment)
+                                <div>
+                                    <div class="metadata-label">Environment</div>
+                                    <div class="metadata-value">{{ $latestRelatedRequest ? $latestRelatedRequest->environment : $latest->environment }}</div>
+                                </div>
+                            @endif
+                        </div>
+                        @if($latestRelatedRequest)
+                            <div class="mt-3">
+                                <a href="{{ route('organizations.projects.requests.show', [$organization, $project, $latestRelatedRequest->uuid]) }}"
+                                   class="text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                                    View Request →
+                                </a>
+                            </div>
+                        @endif
                     @endif
                 </div>
             @endif
@@ -263,16 +303,16 @@
                             Date/Time
                         </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                            Source
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                             HTTP Status
                         </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                            Request ID
+                            Request / Job
                         </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                             Environment
-                        </th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                            Method / Path
                         </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                             Actions
@@ -283,10 +323,26 @@
                     @foreach($occurrences as $occurrence)
                         @php
                             $relatedRequest = $occurrence->getRelatedRequestEvent();
+                            $relatedJob = $occurrence->isFromJob() ? $occurrence->jobEvent : null;
                         @endphp
                         <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50">
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                 {{ $occurrence->occurred_at->format('M j, Y H:i:s') }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @if($occurrence->isFromJob())
+                                    <span class="px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400">
+                                        Job
+                                    </span>
+                                @elseif($occurrence->hasRequest() || $relatedRequest)
+                                    <span class="px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400">
+                                        HTTP
+                                    </span>
+                                @else
+                                    <span class="px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600 dark:bg-gray-900/30 dark:text-gray-400">
+                                        Other
+                                    </span>
+                                @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @php
@@ -303,11 +359,14 @@
                                     <span class="text-gray-400">—</span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-500 dark:text-gray-400">
-                                @if($relatedRequest)
-                                    {{ Str::limit($relatedRequest->request_id, 12) }}
-                                @elseif($occurrence->request_id)
-                                    {{ Str::limit($occurrence->request_id, 12) }}
+                            <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                                @if($occurrence->isFromJob())
+                                    <div class="font-mono truncate max-w-xs" title="{{ class_basename($relatedJob?->job_name ?? $occurrence->controller_action ?? 'UnknownJob') }}">
+                                        {{ class_basename($relatedJob?->job_name ?? $occurrence->controller_action ?? '—') }}
+                                    </div>
+                                @elseif($occurrence->method || $occurrence->path)
+                                    <span class="font-mono">{{ $occurrence->method ?? '' }}</span>
+                                    <span class="ml-1">{{ Str::limit($occurrence->path, 30) }}</span>
                                 @else
                                     <span class="text-gray-400">—</span>
                                 @endif
@@ -315,16 +374,13 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                                 {{ $occurrence->environment ?? '—' }}
                             </td>
-                            <td class="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                                @if($occurrence->method || $occurrence->path)
-                                    <span class="font-mono">{{ $occurrence->method ?? '' }}</span>
-                                    <span class="ml-1">{{ $occurrence->path ?? '' }}</span>
-                                @else
-                                    <span class="text-gray-400">—</span>
-                                @endif
-                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                @if($relatedRequest)
+                                @if($occurrence->isFromJob() && $relatedJob)
+                                    <a href="{{ route('organizations.projects.jobs.show', [$organization, $project, $relatedJob->uuid]) }}"
+                                       class="text-indigo-600 hover:text-indigo-800 font-medium">
+                                        View Job →
+                                    </a>
+                                @elseif($relatedRequest)
                                     <a href="{{ route('organizations.projects.requests.show', [$organization, $project, $relatedRequest->uuid]) }}"
                                        class="text-indigo-600 hover:text-indigo-800 font-medium">
                                         View Request →
