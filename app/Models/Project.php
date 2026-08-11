@@ -134,6 +134,14 @@ class Project extends Model
     }
 
     /**
+     * Get the job events for this project.
+     */
+    public function jobEvents(): HasMany
+    {
+        return $this->hasMany(JobEvent::class);
+    }
+
+    /**
      * Check if a given user is the owner of this project.
      */
     public function isOwnedBy(User $user): bool

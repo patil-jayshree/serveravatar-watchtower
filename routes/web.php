@@ -10,6 +10,7 @@ use App\Http\Controllers\Organization\OrganizationSettingsController;
 use App\Http\Controllers\Organization\SwitchOrganizationController;
 use App\Http\Controllers\Agent\AgentTokenController;
 use App\Http\Controllers\Project\ExceptionGroupController;
+use App\Http\Controllers\Project\JobEventController;
 use App\Http\Controllers\Project\ProjectController;
 use App\Http\Controllers\Project\QueryEventController;
 use App\Http\Controllers\Project\RequestEventController;
@@ -98,6 +99,10 @@ Route::middleware(['auth'])->group(function () {
             // Query Events Routes
             Route::get('/projects/{project}/queries', [QueryEventController::class, 'index'])->name('projects.queries.index');
             Route::get('/projects/{project}/queries/{uuid}', [QueryEventController::class, 'show'])->name('projects.queries.show');
+
+            // Job Events Routes
+            Route::get('/projects/{project}/jobs', [JobEventController::class, 'index'])->name('projects.jobs.index');
+            Route::get('/projects/{project}/jobs/{uuid}', [JobEventController::class, 'show'])->name('projects.jobs.show');
         });
     });
 

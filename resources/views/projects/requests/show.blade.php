@@ -250,6 +250,63 @@
                 </div>
             </div>
             @endif
+
+            {{-- Background Jobs --}}
+            @php
+                $relatedJobs = $project->jobEvents()
+                    ->where('request_id', $event->request_id)
+                    ->orderByDesc('created_at')
+                    ->limit(10)
+                    ->get();
+            @endphp
+            @if($relatedJobs->count() > 0)
+            <div class="bg-purple-50 dark:bg-purple-900/10 rounded-xl shadow-sm border border-purple-200 dark:border-purple-800 p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="text-lg font-semibold text-purple-900 dark:text-purple-400">
+                        Background Jobs
+                    </h2>
+                    <div class="flex items-center gap-3">
+                        <span class="text-sm text-purple-700 dark:text-purple-300">
+                            {{ $relatedJobs->count() }} jobs
+                        </span>
+                        <a href="{{ route('organizations.projects.jobs.index', [$organization, $project]) }}?search=&status=all&queue=all&connection=all&time_range=all"
+                           class="text-purple-600 hover:text-purple-800 dark:text-purple-400 dark:hover:text-purple-300 text-sm font-medium">
+                            View All →
+                        </a>
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    @foreach($relatedJobs as $job)
+                        <a href="{{ route('organizations.projects.jobs.show', [$organization, $project, $job->uuid]) }}"
+                           class="block p-3 bg-white dark:bg-gray-800 rounded-lg border border-purple-100 dark:border-purple-800 hover:border-purple-300 dark:hover:border-purple-700 transition-colors">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <span class="font-medium text-sm text-gray-900 dark:text-gray-100">
+                                        {{ class_basename($job->job_name) }}
+                                    </span>
+                                    <span class="ml-2 px-2 py-0.5 rounded text-xs font-medium
+                                        @if($job->status === 'completed') bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400
+                                        @elseif($job->status === 'failed') bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400
+                                        @elseif($job->status === 'started') bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400
+                                        @else bg-gray-100 text-gray-800 dark:bg-gray-900/30 dark:text-gray-400
+                                        @endif">
+                                        {{ ucfirst($job->status) }}
+                                    </span>
+                                </div>
+                                <div class="flex items-center gap-2 flex-shrink-0">
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">
+                                        {{ $job->formatted_duration }}
+                                    </span>
+                                    <span class="text-xs text-gray-400">
+                                        · {{ $job->attempts }} {{ $job->attempts == 1 ? 'attempt' : 'attempts' }}
+                                    </span>
+                                </div>
+                            </div>
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+            @endif
         </div>
     </div>
 </div>
