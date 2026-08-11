@@ -140,11 +140,12 @@ class LogEventController extends Controller
     }
 
     /**
-     * Get project by organization slug and project UUID.
+     * Get project by organization UUID (or id) and project UUID.
      */
     protected function getProject(string $organization, string $project): ?\App\Models\Project
     {
-        $org = \App\Models\Organization::where('slug', $organization)
+        // Organization can be looked up by uuid or id
+        $org = \App\Models\Organization::where('uuid', $organization)
             ->orWhere('id', (int) $organization)
             ->first();
 
@@ -153,8 +154,10 @@ class LogEventController extends Controller
         }
 
         return \App\Models\Project::where('organization_id', $org->id)
-            ->where('uuid', $project)
-            ->orWhere('id', (int) $project)
+            ->where(function ($q) use ($project) {
+                $q->where('uuid', $project)
+                    ->orWhere('id', (int) $project);
+            })
             ->first();
     }
 }
