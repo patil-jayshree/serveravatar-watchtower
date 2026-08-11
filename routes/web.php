@@ -108,6 +108,9 @@ Route::middleware(['auth'])->group(function () {
             // Log Events Routes
             Route::get('/projects/{project}/logs', [LogEventController::class, 'index'])->name('projects.logs.index');
             Route::get('/projects/{project}/logs/{uuid}', [LogEventController::class, 'show'])->name('projects.logs.show');
+
+            // Performance Routes
+            Route::get('/projects/{project}/performance', [\App\Http\Controllers\Project\PerformanceController::class, 'index'])->name('projects.performance.index');
         });
     });
 

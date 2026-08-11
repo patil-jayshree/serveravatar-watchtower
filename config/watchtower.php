@@ -88,6 +88,17 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Slow Request Threshold (ms)
+    |--------------------------------------------------------------------------
+    |
+    | Requests with duration >= this threshold (in milliseconds) will be
+    | flagged as slow in the Performance monitoring dashboard.
+    |
+    */
+    'slow_request_threshold' => (int) env('WATCHTOWER_SLOW_REQUEST_THRESHOLD', 1000),
+
+    /*
+    |--------------------------------------------------------------------------
     | Footer
     |--------------------------------------------------------------------------
     */

@@ -61,6 +61,9 @@
             <a href="{{ route('organizations.projects.logs.index', [$organization, $project]) }}" class="px-4 py-2 text-sm font-medium border-b-2 {{ request()->routeIs('organizations.projects.logs.*') ? 'border-primary-600 text-primary-600 dark:text-primary-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' }}">
                 Logs
             </a>
+            <a href="{{ route('organizations.projects.performance.index', [$organization, $project]) }}" class="px-4 py-2 text-sm font-medium border-b-2 {{ request()->routeIs('organizations.projects.performance.*') ? 'border-primary-600 text-primary-600 dark:text-primary-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' }}">
+                Performance
+            </a>
             @endif
         </div>
         {{-- Success Message --}}

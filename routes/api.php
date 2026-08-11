@@ -50,6 +50,11 @@ Route::prefix('agent')->name('api.agent.')->group(function () {
         ->name('logs.store');
 });
 
+// Authenticated project API routes
+Route::middleware(['auth:sanctum'])->prefix('projects/{project}')->name('projects.')->group(function () {
+    Route::get('/performance', [\App\Http\Controllers\Api\Project\PerformanceController::class, 'show'])->name('performance.show');
+});
+
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
