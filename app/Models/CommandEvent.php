@@ -279,7 +279,7 @@ class CommandEvent extends Model
             return $query;
         }
 
-        return $query->where('command_name', 'ILIKE', '%' . $search . '%');
+        return $query->where('command_name', 'LIKE', '%' . $search . '%');
     }
 
     /**
