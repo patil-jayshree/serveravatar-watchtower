@@ -596,6 +596,46 @@ document.addEventListener('DOMContentLoaded', function() {
                     </div>
                 </div>
             @endif
+
+            {{-- Scheduler Context --}}
+            @php
+                $schedulerTotal = $project->schedulerTasks()->count();
+                $schedulerFailed = $project->schedulerTasks()->where('last_status', 'failed')->count();
+                $schedulerMissed = $project->schedulerTasks()->where('last_status', 'missed')->count();
+                $schedulerAvgDuration = round($project->schedulerExecutions()->whereNotNull('duration_ms')->avg('duration_ms') ?? 0);
+            @endphp
+            @if($schedulerTotal > 0)
+                <div class="bg-white dark:bg-gray-800 rounded-lg shadow mb-8">
+                    <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Scheduler</h2>
+                            <a href="{{ route('organizations.projects.scheduler.index', [$organization, $project]) }}" class="text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300">
+                                View All →
+                            </a>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                            <div>
+                                <div class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Total Tasks</div>
+                                <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ number_format($schedulerTotal) }}</div>
+                            </div>
+                            <div>
+                                <div class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Failed</div>
+                                <div class="text-2xl font-bold text-red-600 dark:text-red-400">{{ number_format($schedulerFailed) }}</div>
+                            </div>
+                            <div>
+                                <div class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Missed</div>
+                                <div class="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{{ number_format($schedulerMissed) }}</div>
+                            </div>
+                            <div>
+                                <div class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Avg Duration</div>
+                                <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ $schedulerAvgDuration > 0 ? $schedulerAvgDuration . ' ms' : '—' }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @endif
         @endif
     </div>
 </div>

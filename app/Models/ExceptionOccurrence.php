@@ -45,6 +45,7 @@ class ExceptionOccurrence extends Model
         'request_id',
         'job_uuid',
         'command_uuid',
+        'scheduler_uuid',
         'message',
         'stack_trace',
         'file',
@@ -99,11 +100,27 @@ class ExceptionOccurrence extends Model
     }
 
     /**
+     * Get the related scheduler execution if this exception originated from a scheduled task.
+     */
+    public function schedulerExecution(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(\App\Models\SchedulerExecution::class, 'scheduler_uuid');
+    }
+
+    /**
      * Check if this exception originated from a job.
      */
     public function isFromJob(): bool
     {
         return $this->job_uuid !== null;
+    }
+
+    /**
+     * Check if this exception originated from a scheduled task.
+     */
+    public function isFromScheduler(): bool
+    {
+        return $this->scheduler_uuid !== null;
     }
 
     /**
@@ -127,6 +144,10 @@ class ExceptionOccurrence extends Model
             return 'job';
         }
 
+        if ($this->isFromScheduler()) {
+            return 'scheduler';
+        }
+
         if ($this->hasRequest()) {
             return 'http';
         }
@@ -135,7 +156,7 @@ class ExceptionOccurrence extends Model
     }
 
     /**
-     * Get the display name for the source (command name, job name, or request path).
+     * Get the display name for the source (command name, job name, scheduler task, or request path).
      */
     public function getSourceDisplayAttribute(): ?string
     {
@@ -145,6 +166,10 @@ class ExceptionOccurrence extends Model
 
         if ($this->isFromJob()) {
             return $this->controller_action ?? class_basename($this->jobEvent?->job_name ?? 'UnknownJob');
+        }
+
+        if ($this->isFromScheduler()) {
+            return $this->controller_action ?? $this->schedulerExecution?->schedulerTask?->task_name ?? 'UnknownSchedulerTask';
         }
 
         if ($this->hasRequest()) {

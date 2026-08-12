@@ -64,6 +64,9 @@
             <a href="{{ route('organizations.projects.logs.index', [$organization, $project]) }}" class="px-4 py-2 text-sm font-medium border-b-2 {{ request()->routeIs('organizations.projects.logs.*') ? 'border-primary-600 text-primary-600 dark:text-primary-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' }}">
                 Logs
             </a>
+            <a href="{{ route('organizations.projects.scheduler.index', [$organization, $project]) }}" class="px-4 py-2 text-sm font-medium border-b-2 {{ request()->routeIs('organizations.projects.scheduler.*') ? 'border-primary-600 text-primary-600 dark:text-primary-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' }}">
+                Scheduler
+            </a>
             <a href="{{ route('organizations.projects.performance.index', [$organization, $project]) }}" class="px-4 py-2 text-sm font-medium border-b-2 {{ request()->routeIs('organizations.projects.performance.*') ? 'border-primary-600 text-primary-600 dark:text-primary-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300' }}">
                 Performance
             </a>
@@ -328,6 +331,42 @@
                 <div>
                     <p class="text-sm text-gray-500 dark:text-gray-400">Avg Duration</p>
                     <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ $avgCommandDuration > 0 ? $avgCommandDuration . ' ms' : '—' }}</p>
+                </div>
+            </div>
+        </div>
+        @endif
+
+        {{-- Scheduler Summary (only if connected) --}}
+        @if($project->is_connected)
+        @php
+            $totalSchedulerTasks = $project->schedulerTasks()->count();
+            $healthySchedulerTasks = $project->schedulerTasks()->where('last_status', 'healthy')->count();
+            $failedSchedulerTasks = $project->schedulerTasks()->where('last_status', 'failed')->count();
+            $missedSchedulerTasks = $project->schedulerTasks()->where('last_status', 'missed')->count();
+        @endphp
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Scheduler</h2>
+                <a href="{{ route('organizations.projects.scheduler.index', [$organization, $project]) }}" class="text-sm text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300">
+                    View All →
+                </a>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Total Tasks</p>
+                    <p class="text-2xl font-bold text-gray-900 dark:text-white mt-1">{{ number_format($totalSchedulerTasks) }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Healthy</p>
+                    <p class="text-2xl font-bold text-green-600 dark:text-green-400 mt-1">{{ number_format($healthySchedulerTasks) }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Failed</p>
+                    <p class="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">{{ number_format($failedSchedulerTasks) }}</p>
+                </div>
+                <div>
+                    <p class="text-sm text-gray-500 dark:text-gray-400">Missed</p>
+                    <p class="text-2xl font-bold text-yellow-600 dark:text-yellow-400 mt-1">{{ number_format($missedSchedulerTasks) }}</p>
                 </div>
             </div>
         </div>

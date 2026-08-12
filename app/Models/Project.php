@@ -158,6 +158,22 @@ class Project extends Model
     }
 
     /**
+     * Get the scheduler tasks for this project.
+     */
+    public function schedulerTasks(): HasMany
+    {
+        return $this->hasMany(SchedulerTask::class);
+    }
+
+    /**
+     * Get the scheduler executions for this project.
+     */
+    public function schedulerExecutions(): HasMany
+    {
+        return $this->hasMany(SchedulerExecution::class);
+    }
+
+    /**
      * Check if a given user is the owner of this project.
      */
     public function isOwnedBy(User $user): bool

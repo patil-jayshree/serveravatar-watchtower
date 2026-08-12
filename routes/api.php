@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\Agent\ExceptionController;
 use App\Http\Controllers\Api\Agent\JobController;
 use App\Http\Controllers\Api\Agent\LogController;
 use App\Http\Controllers\Api\Agent\QueryController;
+use App\Http\Controllers\Api\Agent\SchedulerController;
 use App\Http\Controllers\Api\Agent\TelemetryController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -53,6 +54,15 @@ Route::prefix('agent')->name('api.agent.')->group(function () {
     Route::post('/commands', [\App\Http\Controllers\Api\Agent\CommandController::class, 'store'])
         ->middleware('agent.token.telemetry')
         ->name('commands.store');
+
+    // Scheduler telemetry
+    Route::post('/scheduler/tasks', [SchedulerController::class, 'storeTask'])
+        ->middleware('agent.token.telemetry')
+        ->name('scheduler.tasks.store');
+
+    Route::post('/scheduler/executions', [SchedulerController::class, 'storeExecution'])
+        ->middleware('agent.token.telemetry')
+        ->name('scheduler.executions.store');
 });
 
 // Authenticated project API routes

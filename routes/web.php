@@ -15,6 +15,7 @@ use App\Http\Controllers\Project\LogEventController;
 use App\Http\Controllers\Project\ProjectController;
 use App\Http\Controllers\Project\QueryEventController;
 use App\Http\Controllers\Project\RequestEventController;
+use App\Http\Controllers\Project\SchedulerController;
 use App\Http\Middleware\LoadCurrentOrganization;
 use App\Http\Middleware\LoadCurrentProject;
 use Illuminate\Support\Facades\Route;
@@ -108,6 +109,10 @@ Route::middleware(['auth'])->group(function () {
             // Command Events Routes
             Route::get('/projects/{project}/commands', [\App\Http\Controllers\Project\CommandEventController::class, 'index'])->name('projects.commands.index');
             Route::get('/projects/{project}/commands/{uuid}', [\App\Http\Controllers\Project\CommandEventController::class, 'show'])->name('projects.commands.show');
+
+            // Scheduler Routes
+            Route::get('/projects/{project}/scheduler', [\App\Http\Controllers\Project\SchedulerController::class, 'index'])->name('projects.scheduler.index');
+            Route::get('/projects/{project}/scheduler/{uuid}', [\App\Http\Controllers\Project\SchedulerController::class, 'show'])->name('projects.scheduler.show');
 
             // Log Events Routes
             Route::get('/projects/{project}/logs', [LogEventController::class, 'index'])->name('projects.logs.index');
