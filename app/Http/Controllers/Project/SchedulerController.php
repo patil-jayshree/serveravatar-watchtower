@@ -100,6 +100,7 @@ class SchedulerController extends Controller
         // Execution history for this task
         $executionsQuery = $project->schedulerExecutions()
             ->where('scheduler_task_uuid', $task->uuid)
+            ->with('exceptionOccurrence.exceptionGroup')
             ->orderByDesc('created_at');
 
         if ($request->filled('time_range') && $request->input('time_range') !== 'all') {
@@ -146,7 +147,8 @@ class SchedulerController extends Controller
         $exceptionOccurrence = null;
         $latestExecution = $task->latestExecution;
         if ($latestExecution && $latestExecution->status === 'failed' && $latestExecution->exception_uuid) {
-            $exceptionOccurrence = ExceptionOccurrence::where('uuid', $latestExecution->exception_uuid)
+            $exceptionOccurrence = ExceptionOccurrence::with('exceptionGroup')
+                ->where('uuid', $latestExecution->exception_uuid)
                 ->where('project_id', $project->id)
                 ->first();
         }

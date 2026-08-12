@@ -128,6 +128,7 @@ class StoreSchedulerExecution
         $exceptionData = [
             'scheduler_uuid' => $execution->uuid,
             'controller_action' => $data['task_name'] ?? null,
+            'exception_type' => $data['exception_class'] ?? 'RuntimeException',
             'message' => $data['exception_message'] ?? $data['exception_class'],
             'file' => $data['exception_file'] ?? 'scheduler',
             'line' => $data['exception_line'] ?? 0,

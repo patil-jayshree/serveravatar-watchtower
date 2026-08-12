@@ -126,15 +126,9 @@ class SchedulerExecution extends Model
     /**
      * Get the linked exception occurrence.
      */
-    public function exceptionOccurrence(): ?ExceptionOccurrence
+    public function exceptionOccurrence(): BelongsTo
     {
-        if (! $this->exception_uuid) {
-            return null;
-        }
-
-        return ExceptionOccurrence::where('uuid', $this->exception_uuid)
-            ->where('project_id', $this->project_id)
-            ->first();
+        return $this->belongsTo(ExceptionOccurrence::class, 'exception_uuid', 'uuid');
     }
 
     /**

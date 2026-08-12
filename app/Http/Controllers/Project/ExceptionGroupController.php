@@ -139,7 +139,10 @@ class ExceptionGroupController extends Controller
             abort(403);
         }
 
-        $group = $project->exceptionGroups()->where('uuid', $uuid)->firstOrFail();
+        $group = $project->exceptionGroups()
+            ->with(['latestOccurrence.schedulerExecution.schedulerTask'])
+            ->where('uuid', $uuid)
+            ->firstOrFail();
 
         $query = $group->occurrences()
             ->orderByDesc('occurred_at');

@@ -126,7 +126,7 @@
             </div>
 
             <!-- Source Context -->
-            @if($latest->isFromJob() || $latest->hasRequest() || $latestRelatedRequest || $latest->isFromCommand())
+            @if($latest->isFromJob() || $latest->hasRequest() || $latestRelatedRequest || $latest->isFromCommand() || $latest->isFromScheduler())
                 <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
                     @if($latest->isFromJob())
                         @php
@@ -201,6 +201,46 @@
                                 <a href="{{ route('organizations.projects.commands.show', [$organization, $project, $relatedCommand->uuid]) }}"
                                    class="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-800 text-sm font-medium">
                                     View Command →
+                                </a>
+                            </div>
+                        @endif
+                    @elseif($latest->isFromScheduler())
+                        @php
+                            $relatedScheduler = $latest->schedulerExecution;
+                            $relatedSchedulerTask = $relatedScheduler?->schedulerTask;
+                        @endphp
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="px-2 py-0.5 rounded text-xs font-medium bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-400">
+                                Source: Scheduled Task
+                            </span>
+                        </div>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div>
+                                <div class="metadata-label">Task</div>
+                                <div class="metadata-value font-mono">{{ $relatedSchedulerTask?->task_name ?? $latest->controller_action ?? 'UnknownSchedulerTask' }}</div>
+                            </div>
+                            <div>
+                                <div class="metadata-label">Execution ID</div>
+                                <div class="metadata-value font-mono">{{ $latest->scheduler_uuid }}</div>
+                            </div>
+                            @if($relatedScheduler?->started_at)
+                                <div>
+                                    <div class="metadata-label">Executed At</div>
+                                    <div class="metadata-value">{{ $relatedScheduler->started_at->format('M j, H:i:s') }}</div>
+                                </div>
+                            @endif
+                            @if($latest->environment)
+                                <div>
+                                    <div class="metadata-label">Environment</div>
+                                    <div class="metadata-value">{{ $latest->environment }}</div>
+                                </div>
+                            @endif
+                        </div>
+                        @if($relatedSchedulerTask)
+                            <div class="mt-3">
+                                <a href="{{ route('organizations.projects.scheduler.show', [$organization, $project, $relatedSchedulerTask->uuid]) }}"
+                                   class="inline-flex items-center gap-1 text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                                    View Scheduler →
                                 </a>
                             </div>
                         @endif
