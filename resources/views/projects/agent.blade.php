@@ -94,16 +94,16 @@
                             </div>
                             <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">For local development, configure a path repository in your Laravel application's composer.json:</p>
                             <div class="bg-gray-900 dark:bg-gray-700 rounded-lg p-4 font-mono text-sm mb-3">
-                                <p class="text-gray-400 mb-2">// Add to your composer.json repositories section:</p>
-                                <p class="text-green-400">{</p>
-                                <p class="text-green-400">    "type": "path",</p>
-                                <p class="text-green-400">    "url": "../sa-watchtower-agent",</p>
-                                <p class="text-green-400">    "options": { "symlink": true }</p>
-                                <p class="text-green-400">}</p>
+                                <p class="text-gray-400 mb-2">// Add to your composer.json (must be an array):</p>
+                                <p class="text-green-400">"repositories": [</p>
+                                <p class="text-green-400 pl-4">{"type": "path", "url": "../sa-watchtower-agent", "options": { "symlink": true }}</p>
+                                <p class="text-green-400">]</p>
                             </div>
-                            <div class="bg-gray-900 dark:bg-gray-700 rounded-lg p-4 font-mono text-sm">
-                                <code class="text-green-400">composer require serveravatar/watchtower-agent:*@dev</code>
+                            <div class="bg-gray-900 dark:bg-gray-700 rounded-lg p-4 font-mono text-sm mb-3">
+                                <p class="text-gray-400 mb-2">// Then run:</p>
+                                <p class="text-green-400">composer require serveravatar/watchtower-agent:*@dev --ignore-platform-req=ext-bcmath</p>
                             </div>
+                            <p class="text-xs text-gray-400 dark:text-gray-500">Note: The <code class="px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">--ignore-platform-req=ext-bcmath</code> flag is needed if bcmath extension is not installed.</p>
                         </div>
 
                         {{-- Production Installation --}}
@@ -114,7 +114,7 @@
                             </div>
                             <p class="text-sm text-gray-500 dark:text-gray-400 mb-3">Once published to Packagist, install via:</p>
                             <div class="bg-gray-900 dark:bg-gray-700 rounded-lg p-4 font-mono text-sm">
-                                <code class="text-green-400">composer require serveravatar/watchtower-agent</code>
+                                <code class="text-green-400">composer require serveravatar/watchtower-agent --ignore-platform-req=ext-bcmath</code>
                             </div>
                             <p class="text-xs text-gray-400 dark:text-gray-500 mt-2">Package repository: git@github.com:patil-jayshree/serveravatar-watchtower-agent.git</p>
                         </div>
@@ -122,40 +122,43 @@
                 </div>
             </div>
 
-            {{-- Step 2: Configure --}}
+            {{-- Step 2: Install & Configure (Simplified) --}}
             <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
                 <div class="flex items-start gap-4">
                     <div class="flex-shrink-0 w-8 h-8 bg-primary-100 dark:bg-primary-900/30 rounded-full flex items-center justify-center">
                         <span class="text-sm font-semibold text-primary-600 dark:text-primary-400">2</span>
                     </div>
                     <div class="flex-1">
-                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Configure Environment</h2>
-                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Add these variables to your Laravel application's <code class="px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs">.env</code> file:</p>
+                        <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Run Install Command</h2>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">The <code class="px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-xs">watchtower:install</code> command automatically configures everything for you — validates your token, sets up environment variables, and enables all monitoring features.</p>
 
-                        <div class="bg-gray-900 dark:bg-gray-700 rounded-lg p-4 font-mono text-sm space-y-2">
-                            <div class="flex items-center justify-between">
+                        <div class="bg-gray-900 dark:bg-gray-700 rounded-lg p-4 font-mono text-sm mb-3">
+                            <p class="text-gray-400 mb-2">// Interactive (will ask for token):</p>
+                            <p class="text-green-400">php artisan watchtower:install</p>
+                        </div>
+
+                        <div class="bg-gray-900 dark:bg-gray-700 rounded-lg p-4 font-mono text-sm mb-4">
+                            <p class="text-gray-400 mb-2">// Or provide URL and token directly:</p>
+                            <p class="text-green-400">php artisan watchtower:install \</p>
+                            <p class="text-green-400 pl-4">--url="{{ url('/') }}" \</p>
+                            <p class="text-green-400 pl-4">--token="your-agent-token" \</p>
+                            <p class="text-green-400 pl-4">--no-interaction</p>
+                        </div>
+
+                        <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                            <div class="flex items-start gap-3">
+                                <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
                                 <div>
-                                    <span class="text-gray-400">WATCHTOWER_URL=</span>
-                                    <span class="text-green-400">{{ url('/') }}</span>
+                                    <p class="text-sm font-medium text-blue-800 dark:text-blue-200">What it does:</p>
+                                    <ul class="text-sm text-blue-700 dark:text-blue-300 mt-1 space-y-1">
+                                        <li>• Validates your agent token</li>
+                                        <li>• Auto-configures all <code class="px-1 py-0.5 bg-blue-100 dark:bg-blue-800 rounded text-xs">WATCHTOWER_*</code> environment variables</li>
+                                        <li>• Enables all monitoring features by default</li>
+                                        <li>• Never overwrites existing values (idempotent)</li>
+                                    </ul>
                                 </div>
-                                <button onclick="copyToClipboard('{{ url('/') }}', 'URL')" class="text-xs text-gray-400 hover:text-white">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                                    </svg>
-                                </button>
-                            </div>
-                            <div class="flex items-center justify-between">
-                                <div>
-                                    <span class="text-gray-400">WATCHTOWER_TOKEN=</span>
-                                    <span class="text-green-400" id="token-display">{{ $agentToken ? $agentToken->masked_token : 'No token generated' }}</span>
-                                </div>
-                                @if($agentToken && $justGenerated && $rawToken)
-                                    <button onclick="copyToClipboard('{{ $rawToken }}', 'Token')" class="text-xs text-gray-400 hover:text-white">
-                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                                        </svg>
-                                    </button>
-                                @endif
                             </div>
                         </div>
 
@@ -166,8 +169,9 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                     </svg>
                                     <div>
-                                        <p class="text-sm font-medium text-amber-800 dark:text-amber-200">Store this token securely.</p>
-                                        <p class="text-sm text-amber-700 dark:text-amber-300 mt-1">It will not be shown again. If you lose it, regenerate a new token.</p>
+                                        <p class="text-sm font-medium text-amber-800 dark:text-amber-200">Your Agent Token</p>
+                                        <p class="text-sm font-mono text-amber-700 dark:text-amber-300 mt-1 break-all">{{ $rawToken }}</p>
+                                        <p class="text-xs text-amber-600 dark:text-amber-400 mt-2">Store this token securely. It will not be shown again.</p>
                                     </div>
                                 </div>
                             </div>
@@ -184,19 +188,41 @@
                     </div>
                     <div class="flex-1">
                         <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Verify Connection</h2>
-                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Run this command in your Laravel application to test the connection:</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">Check agent status and all monitoring features:</p>
                         <div class="bg-gray-900 dark:bg-gray-700 rounded-lg p-4 font-mono text-sm">
                             <code class="text-green-400">php artisan watchtower:status</code>
                         </div>
 
                         <div class="mt-6 border-t border-gray-200 dark:border-gray-700 pt-6">
-                            <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Expected Output:</h3>
-                            <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 text-sm font-mono">
-                                @if($project->is_connected)
-                                    <p class="text-green-600 dark:text-green-400">Watchtower Agent<br>----------------<br><br>Status: Connected<br>Project: {{ $project->name }}<br>Environment: {{ $project->environment }}</p>
-                                @else
-                                    <p class="text-yellow-600 dark:text-yellow-400">Watchtower Agent<br>----------------<br><br>Status: Not Connected<br><br>Connection has not been verified.</p>
-                                @endif
+                            <h3 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">What it shows:</h3>
+                            <div class="grid grid-cols-2 gap-2 text-sm">
+                                <div class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                                    <span class="w-2 h-2 rounded-full bg-green-500"></span> Connection status
+                                </div>
+                                <div class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                                    <span class="w-2 h-2 rounded-full bg-green-500"></span> Project details
+                                </div>
+                                <div class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                                    <span class="w-2 h-2 rounded-full bg-green-500"></span> HTTP Request monitoring
+                                </div>
+                                <div class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                                    <span class="w-2 h-2 rounded-full bg-green-500"></span> Exception monitoring
+                                </div>
+                                <div class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                                    <span class="w-2 h-2 rounded-full bg-green-500"></span> SQL Query monitoring
+                                </div>
+                                <div class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                                    <span class="w-2 h-2 rounded-full bg-green-500"></span> Command monitoring
+                                </div>
+                                <div class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                                    <span class="w-2 h-2 rounded-full bg-green-500"></span> Job monitoring
+                                </div>
+                                <div class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                                    <span class="w-2 h-2 rounded-full bg-green-500"></span> Log monitoring
+                                </div>
+                                <div class="flex items-center gap-2 text-gray-600 dark:text-gray-400">
+                                    <span class="w-2 h-2 rounded-full bg-green-500"></span> Scheduler monitoring
+                                </div>
                             </div>
                         </div>
                     </div>
