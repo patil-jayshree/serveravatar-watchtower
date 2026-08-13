@@ -70,6 +70,92 @@
                 </div>
             </div>
 
+            {{-- Shared: Related Exceptions query (used by Response section and Related Exceptions section) --}}
+            @php
+                $relatedExceptions = $project->exceptionOccurrences()
+                    ->where('request_id', $event->request_id)
+                    ->with('exceptionGroup')
+                    ->orderByDesc('occurred_at')
+                    ->limit(5)
+                    ->get();
+
+                if ($relatedExceptions->isEmpty()) {
+                    $relatedExceptions = $project->exceptionOccurrences()
+                        ->where('method', $event->method)
+                        ->where('path', $event->path)
+                        ->whereBetween('occurred_at', [
+                            $event->requested_at->subSeconds(5),
+                            $event->requested_at->addSeconds(5),
+                        ])
+                        ->with('exceptionGroup')
+                        ->orderByDesc('occurred_at')
+                        ->limit(5)
+                        ->get();
+                }
+            @endphp
+
+            {{-- Response / Error Details --}}
+            @if($event->isError())
+            @php
+                $sanitizedError = $event->getSanitizedErrorMessage();
+            @endphp
+            <div class="bg-orange-50 dark:bg-orange-900/10 rounded-xl shadow-sm border border-orange-200 dark:border-orange-800 p-6">
+                <h2 class="text-lg font-semibold text-orange-900 dark:text-orange-400 mb-4">Response</h2>
+                <dl class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <dt class="text-sm text-gray-500 dark:text-gray-400 mb-1">Status</dt>
+                        <dd>
+                            <span class="inline-flex items-center px-2 py-1 rounded text-sm font-medium
+                                @if($event->status_code >= 400 && $event->status_code < 500) bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400
+                                @else bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400
+                                @endif">
+                                {{ $event->status_code }} {{ $event->getHumanStatusText() }}
+                            </span>
+                        </dd>
+                    </div>
+                    @if($event->error_type || $event->getErrorTypeLabel())
+                    <div>
+                        <dt class="text-sm text-gray-500 dark:text-gray-400 mb-1">Error</dt>
+                        <dd class="text-sm font-medium text-orange-900 dark:text-orange-300 mt-1">
+                            {{ $event->error_type ?? $event->getErrorTypeLabel() }}
+                        </dd>
+                    </div>
+                    @endif
+                </dl>
+
+                @if($sanitizedError)
+                <div class="mt-4">
+                    <dt class="text-sm text-gray-500 dark:text-gray-400 mb-1">Details</dt>
+                    <dd>
+                        <pre class="bg-white dark:bg-gray-800 border border-orange-200 dark:border-orange-700 rounded-lg p-4 text-sm font-mono text-gray-800 dark:text-gray-200 overflow-x-auto whitespace-pre-wrap break-all max-h-64 overflow-y-auto">{{ $sanitizedError }}</pre>
+                    </dd>
+                </div>
+                @endif
+
+                @if($relatedExceptions->count() > 0)
+                <div class="mt-4 pt-4 border-t border-orange-200 dark:border-orange-700">
+                    <dt class="text-sm text-gray-500 dark:text-gray-400 mb-2">Exception</dt>
+                    @foreach($relatedExceptions->take(1) as $exc)
+                    <div class="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg border border-red-200 dark:border-red-800">
+                        <div>
+                            <span class="font-mono text-sm font-medium text-red-600 dark:text-red-400">
+                                {{ class_basename($exc->exceptionGroup->exception_type) }}
+                            </span>
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mt-0.5 truncate max-w-md">
+                                {{ $exc->message_preview ?? Str::limit($exc->message, 100) }}
+                            </p>
+                        </div>
+                        <a href="{{ route('organizations.projects.exceptions.show', [$organization, $project, $exc->exception_group_uuid]) }}"
+                           class="ml-4 inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 transition-colors">
+                            View Exception →
+                        </a>
+                    </div>
+                    @endforeach
+                </div>
+                @endif
+            </div>
+            @endif
+
             {{-- Request Details --}}
             <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
                 <h2 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Request Details</h2>
@@ -129,30 +215,6 @@
             </div>
 
             {{-- Related Exceptions --}}
-            @php
-                // First try exact request_id match
-                $relatedExceptions = $project->exceptionOccurrences()
-                    ->where('request_id', $event->request_id)
-                    ->with('exceptionGroup')
-                    ->orderByDesc('occurred_at')
-                    ->limit(5)
-                    ->get();
-
-                // Fallback: match by method + path + timestamp if no exact matches
-                if ($relatedExceptions->isEmpty()) {
-                    $relatedExceptions = $project->exceptionOccurrences()
-                        ->where('method', $event->method)
-                        ->where('path', $event->path)
-                        ->whereBetween('occurred_at', [
-                            $event->requested_at->subSeconds(5),
-                            $event->requested_at->addSeconds(5),
-                        ])
-                        ->with('exceptionGroup')
-                        ->orderByDesc('occurred_at')
-                        ->limit(5)
-                        ->get();
-                }
-            @endphp
             @if($relatedExceptions->count() > 0)
             <div class="bg-red-50 dark:bg-red-900/10 rounded-xl shadow-sm border border-red-200 dark:border-red-800 p-6">
                 <div class="flex items-center justify-between mb-4">
