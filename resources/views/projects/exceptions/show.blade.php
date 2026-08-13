@@ -360,11 +360,76 @@
                 </div>
             </div>
 
-            <!-- Stack Trace -->
-            <div class="px-6 py-4">
-                <div class="metadata-label mb-2">Stack Trace</div>
-                <pre class="code-block whitespace-pre-wrap text-gray-700 dark:text-gray-300">{{ $latest->stack_trace }}</pre>
+            <!-- Error Location -->
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <div class="metadata-label mb-3">Error Location</div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div>
+                        <div class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">File</div>
+                        <div class="font-mono text-sm text-gray-900 dark:text-gray-200 truncate" title="{{ $latest->file }}">
+                            {{ Str::after($latest->file, 'app/') ?? $latest->file }}
+                        </div>
+                    </div>
+                    <div>
+                        <div class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Line</div>
+                        <div class="font-mono text-sm text-gray-900 dark:text-gray-200">
+                            {{ $latest->line }}
+                        </div>
+                    </div>
+                    <div>
+                        <div class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Function</div>
+                        <div class="font-mono text-sm text-gray-900 dark:text-gray-200">
+                            {{ $latest->function_display }}
+                        </div>
+                    </div>
+                </div>
+                @if($latest->exception_class && class_basename($latest->exception_class) !== $latest->exception_class_name)
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <div class="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase mb-1">Exception Class</div>
+                            <div class="font-mono text-sm text-gray-900 dark:text-gray-200 truncate" title="{{ $latest->exception_class }}">
+                                {{ class_basename($latest->exception_class) }}
+                            </div>
+                        </div>
+                    </div>
+                @endif
             </div>
+
+            <!-- Source Code Context -->
+            <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+                <div class="metadata-label mb-3">Source Code</div>
+                @php
+                    $sourceContext = $latest->parsed_source_context;
+                @endphp
+                @if($sourceContext && is_array($sourceContext) && count($sourceContext) > 0)
+                    @if($latest->source_file)
+                        <div class="text-xs font-medium text-gray-500 dark:text-gray-400 mb-2 font-mono">
+                            {{ $latest->source_file }}
+                        </div>
+                    @endif
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm font-mono source-code-table">
+                            <tbody>
+                                @foreach($sourceContext as $frame)
+                                    <tr class="@if(isset($frame['is_failing']) && $frame['is_failing']) bg-red-100 dark:bg-red-900/20 @else bg-transparent @endif">
+                                        <td class="px-3 py-0.5 text-right text-gray-400 dark:text-gray-500 select-none w-10 text-xs align-top">
+                                            {{ $frame['line'] ?? '' }}
+                                        </td>
+                                        <td class="px-3 py-0.5 text-gray-800 dark:text-gray-200 whitespace-pre @if(isset($frame['is_failing']) && $frame['is_failing']) text-red-700 dark:text-red-300 font-semibold @endif">
+                                            {{ $frame['content'] ?? '' }}
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                @else
+                    <div class="text-sm text-gray-500 dark:text-gray-400 italic">
+                        Source code unavailable
+                    </div>
+                @endif
+            </div>
+
         </div>
     @endif
 

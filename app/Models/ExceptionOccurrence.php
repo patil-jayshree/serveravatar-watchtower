@@ -50,6 +50,11 @@ class ExceptionOccurrence extends Model
         'stack_trace',
         'file',
         'line',
+        'exception_class',
+        'exception_class_name',
+        'function',
+        'source_file',
+        'source_context',
         'status_code',
         'method',
         'path',
@@ -74,6 +79,96 @@ class ExceptionOccurrence extends Model
         'status_code' => 'integer',
         'occurred_at' => 'datetime',
     ];
+
+    /**
+     * Get the exception class name (short form).
+     * e.g., "RuntimeException" instead of "Illuminate\\Database\\Eloquent\\ModelNotFoundException"
+     */
+    public function getExceptionClassNameAttribute(): string
+    {
+        if (! $this->exception_class) {
+            return 'Unknown';
+        }
+
+        return class_basename($this->exception_class);
+    }
+
+    /**
+     * Get the stack trace as a decoded array.
+     *
+     * @return array<int, array{file?: string, line?: int, class?: string, type?: string, function?: string, args?: mixed}>
+     */
+    public function getParsedStackTraceAttribute(): array
+    {
+        if (empty($this->stack_trace)) {
+            return [];
+        }
+
+        // Try to decode as JSON first (new format)
+        $decoded = json_decode($this->stack_trace, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+            return $decoded;
+        }
+
+        // Fall back to treating as plain text - return as single frame with text
+        return [['text' => $this->stack_trace]];
+    }
+
+    /**
+     * Get the function display string.
+     */
+    public function getFunctionDisplayAttribute(): string
+    {
+        if (empty($this->function) && empty($this->exception_class_name)) {
+            return '—';
+        }
+
+        if (empty($this->function)) {
+            return $this->exception_class_name;
+        }
+
+        if (empty($this->exception_class_name)) {
+            return $this->function;
+        }
+
+        // If function already contains the class (e.g., "ClassName::method")
+        if (str_contains($this->function, '::') || str_contains($this->function, '->')) {
+            return $this->function;
+        }
+
+        return $this->exception_class_name . '::' . $this->function;
+    }
+
+    /**
+     * Get the source file display path (relative).
+     */
+    public function getSourceFileDisplayAttribute(): ?string
+    {
+        if (empty($this->source_file)) {
+            return null;
+        }
+
+        return $this->source_file;
+    }
+
+    /**
+     * Get the parsed source context as an array.
+     *
+     * @return array<int, array{line: int, content: string, is_failing: bool}>
+     */
+    public function getParsedSourceContextAttribute(): ?array
+    {
+        if (empty($this->source_context)) {
+            return null;
+        }
+
+        $decoded = json_decode($this->source_context, true);
+        if (json_last_error() !== JSON_ERROR_NONE || ! is_array($decoded)) {
+            return null;
+        }
+
+        return $decoded;
+    }
 
     /**
      * Get the exception group that owns this occurrence.
