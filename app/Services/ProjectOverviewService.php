@@ -162,7 +162,7 @@ class ProjectOverviewService
 
         // Get the latest Carbon instance
         $latest = max($timestamps);
-        $diff = now()->diffInSeconds($latest);
+        $diff = $latest->diffInSeconds(now());
 
         $text = $this->formatTimeAgo((int) floor($diff));
 
@@ -419,7 +419,7 @@ class ProjectOverviewService
                     'exception_type' => $occurrence->exception_class_name ?? class_basename($occurrence->exception_class ?? 'Unknown'),
                     'message' => $occurrence->message ? substr($occurrence->message, 0, 100) : 'No message',
                     'occurred_at' => $occurrence->occurred_at?->toIso8601String(),
-                    'time_ago' => $occurrence->occurred_at ? now()->diffInMinutes($occurrence->occurred_at) . ' min ago' : null,
+                    'time_ago' => $occurrence->occurred_at ? $occurrence->occurred_at->diffInMinutes(now()) . ' min ago' : null,
                 ];
             })
             ->toArray();
