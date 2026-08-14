@@ -195,17 +195,8 @@ export default function AppLayout({ children }) {
             </header>
 
             <div className="app-body">
-                {/* Sidebar - Dark Theme */}
+                {/* Sidebar - Light Theme */}
                 <aside className="sidebar">
-                    {/* Logo */}
-                    <div className="sidebar-logo">
-                        <img
-                            src="/logos/brand-logo.png"
-                            alt="Watchtower"
-                            className="sidebar-logo-img"
-                        />
-                    </div>
-
                     {/* Main Navigation */}
                     <nav className="sidebar-nav">
                         {mainNav.map((item) => {
