@@ -1,224 +1,231 @@
 import { Link, usePage } from '@inertiajs/react';
-import { useState } from 'react';
 import AppLayout from '@/layouts/AppLayout';
 import {
     Building2,
-    FolderKanban,
+    FolderPlus,
+    Download,
     Activity,
-    AlertTriangle,
-    Clock,
-    CheckCircle2,
-    TrendingUp,
-    Server,
-    ChevronDown,
-    Sun,
-    Moon,
     Plus,
+    ChevronRight,
 } from 'lucide-react';
 
-function cn(...classes) {
-    return classes.filter(Boolean).join(' ');
-}
-
-function StatCard({ title, value, change, changeType, icon: Icon, href }) {
-    return (
-        <Link
-            href={href || '#'}
-            className="bg-card border rounded-xl p-6 hover:border-primary/50 transition-colors"
-        >
-            <div className="flex items-start justify-between mb-4">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <Icon className="w-5 h-5 text-primary" />
-                </div>
-                {change && (
-                    <span className={cn(
-                        'text-xs font-medium px-2 py-1 rounded-full',
-                        changeType === 'positive' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
-                        changeType === 'negative' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
-                        'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
-                    )}>
-                        {change}
-                    </span>
-                )}
-            </div>
-            <div className="text-2xl font-semibold text-foreground mb-1">{value}</div>
-            <div className="text-sm text-muted-foreground">{title}</div>
-        </Link>
-    );
-}
-
 export default function Dashboard() {
-    const { user, organizations, selectedOrg, dashboardData, timeRange } = usePage().props;
-    const [isDark, setIsDark] = useState(() => {
-        if (typeof window !== 'undefined') {
-            return document.documentElement.classList.contains('dark');
-        }
-        return false;
-    });
+    const { user } = usePage().props;
 
-    const toggleTheme = () => {
-        setIsDark(!isDark);
-        document.documentElement.classList.toggle('dark');
-    };
-
-    const handleOrgSwitch = (orgId) => {
-        // Will be handled by form submission to switch endpoint
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = `/organizations/switch/${orgId}`;
-        const csrf = document.createElement('input');
-        csrf.type = 'hidden';
-        csrf.name = '_token';
-        csrf.value = document.querySelector('meta[name="csrf-token"]')?.content || '';
-        form.appendChild(csrf);
-        document.body.appendChild(form);
-        form.submit();
-    };
+    const steps = [
+        {
+            number: '01',
+            title: 'Create Organization',
+            description: 'Start by creating your organization to manage your projects.',
+            icon: Building2,
+        },
+        {
+            number: '02',
+            title: 'Add Laravel Project',
+            description: 'Register your Laravel application with Watchtower.',
+            icon: FolderPlus,
+        },
+        {
+            number: '03',
+            title: 'Install Watchtower Agent',
+            description: 'Install the Watchtower agent in your Laravel project.',
+            icon: Download,
+        },
+        {
+            number: '04',
+            title: 'Start Monitoring',
+            description: 'View real-time telemetry, exceptions, and performance metrics.',
+            icon: Activity,
+        },
+    ];
 
     return (
         <AppLayout>
             <div className="p-8">
                 {/* Header */}
-                <div className="flex items-center justify-between mb-8">
-                    <div>
-                        <h1 className="text-2xl font-semibold text-foreground">
-                            Welcome back, {user?.name} 👋
-                        </h1>
-                        <p className="text-muted-foreground mt-1">
-                            {selectedOrg ? `Monitoring ${selectedOrg.name}` : 'Select an organization'}
-                        </p>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        {/* Time Range Selector */}
-                        <select
-                            value={timeRange}
-                            className="px-3 py-2 rounded-lg border bg-background text-foreground text-sm"
-                        >
-                            <option value="1h">Last 1 hour</option>
-                            <option value="24h">Last 24 hours</option>
-                            <option value="7d">Last 7 days</option>
-                            <option value="30d">Last 30 days</option>
-                        </select>
-
-                        {/* Theme Toggle */}
-                        <button
-                            onClick={toggleTheme}
-                            className="p-2 rounded-lg hover:bg-accent transition-colors"
-                            aria-label="Toggle theme"
-                        >
-                            {isDark ? (
-                                <Sun className="w-5 h-5 text-foreground" />
-                            ) : (
-                                <Moon className="w-5 h-5 text-foreground" />
-                            )}
-                        </button>
-                    </div>
+                <div className="mb-8">
+                    <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
+                        Welcome back, {user?.name || 'User'} 👋
+                    </h1>
                 </div>
 
-                {/* Organization Selector (if multiple) */}
-                {organizations && organizations.length > 1 && (
-                    <div className="mb-6">
-                        <div className="relative inline-block">
-                            <select
-                                value={selectedOrg?.id || ''}
-                                onChange={(e) => handleOrgSwitch(e.target.value)}
-                                className="appearance-none px-4 py-2 pr-10 rounded-lg border bg-card text-foreground font-medium cursor-pointer"
+                {/* Empty State Card */}
+                <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-12 mb-8 max-w-3xl mx-auto">
+                    <div className="flex flex-col items-center text-center">
+                        {/* Telescope Illustration */}
+                        <div className="mb-8 relative">
+                            <svg
+                                width="200"
+                                height="160"
+                                viewBox="0 0 200 160"
+                                fill="none"
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="text-cyan-600 dark:text-cyan-400"
                             >
-                                {organizations.map(org => (
-                                    <option key={org.id} value={org.id}>
-                                        {org.name}
-                                    </option>
-                                ))}
-                            </select>
-                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
+                                {/* Ground */}
+                                <path
+                                    d="M20 140H180"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    opacity="0.3"
+                                />
+                                
+                                {/* Tower Base */}
+                                <path
+                                    d="M100 140V100M85 140H115M90 140V115H110V140"
+                                    stroke="currentColor"
+                                    strokeWidth="3"
+                                    strokeLinecap="round"
+                                />
+                                
+                                {/* Tower Middle */}
+                                <path
+                                    d="M95 100L100 70L105 100"
+                                    stroke="currentColor"
+                                    strokeWidth="2.5"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                />
+                                
+                                {/* Observation Deck */}
+                                <ellipse
+                                    cx="100"
+                                    cy="70"
+                                    rx="12"
+                                    ry="5"
+                                    fill="currentColor"
+                                    opacity="0.2"
+                                />
+                                
+                                {/* Telescope */}
+                                <circle
+                                    cx="100"
+                                    cy="62"
+                                    r="10"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                />
+                                <circle
+                                    cx="100"
+                                    cy="62"
+                                    r="5"
+                                    fill="currentColor"
+                                    opacity="0.4"
+                                />
+                                
+                                {/* Telescope Arms */}
+                                <path
+                                    d="M90 62H82M110 62H118"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                />
+                                
+                                {/* Signal Waves Left */}
+                                <path
+                                    d="M65 55Q55 62 65 70"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    opacity="0.4"
+                                />
+                                <path
+                                    d="M55 48Q40 62 55 76"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    opacity="0.25"
+                                />
+                                
+                                {/* Signal Waves Right */}
+                                <path
+                                    d="M135 55Q145 62 135 70"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    opacity="0.4"
+                                />
+                                <path
+                                    d="M145 48Q160 62 145 76"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    opacity="0.25"
+                                />
+                                
+                                {/* Stars */}
+                                <circle cx="40" cy="30" r="2" fill="currentColor" opacity="0.3" />
+                                <circle cx="160" cy="25" r="2" fill="currentColor" opacity="0.3" />
+                                <circle cx="175" cy="45" r="1.5" fill="currentColor" opacity="0.2" />
+                                <circle cx="25" cy="50" r="1.5" fill="currentColor" opacity="0.2" />
+                                <circle cx="80" cy="20" r="1.5" fill="currentColor" opacity="0.25" />
+                                <circle cx="130" cy="15" r="1.5" fill="currentColor" opacity="0.25" />
+                                
+                                {/* Cloud Left */}
+                                <ellipse cx="35" cy="85" rx="15" ry="8" fill="currentColor" opacity="0.15" />
+                                <ellipse cx="45" cy="82" rx="12" ry="6" fill="currentColor" opacity="0.15" />
+                                
+                                {/* Cloud Right */}
+                                <ellipse cx="165" cy="80" rx="12" ry="6" fill="currentColor" opacity="0.15" />
+                                <ellipse cx="175" cy="83" rx="10" ry="5" fill="currentColor" opacity="0.15" />
+                            </svg>
                         </div>
-                    </div>
-                )}
 
-                {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <StatCard
-                        title="Total Requests"
-                        value={dashboardData?.requests?.total?.toLocaleString() || '0'}
-                        change="+12.5%"
-                        changeType="positive"
-                        icon={Activity}
-                        href={selectedOrg ? `/organizations/${selectedOrg.id}/projects` : '#'}
-                    />
-                    <StatCard
-                        title="Exceptions"
-                        value={dashboardData?.exceptions?.total || '0'}
-                        change={dashboardData?.exceptions?.change || '0%'}
-                        changeType={dashboardData?.exceptions?.changeType}
-                        icon={AlertTriangle}
-                        href={selectedOrg ? `/organizations/${selectedOrg.id}/exceptions` : '#'}
-                    />
-                    <StatCard
-                        title="Avg Response Time"
-                        value={dashboardData?.performance?.avgDuration || '0ms'}
-                        change={dashboardData?.performance?.change || '0%'}
-                        changeType={dashboardData?.performance?.changeType}
-                        icon={Clock}
-                        href={selectedOrg ? `/organizations/${selectedOrg.id}/performance` : '#'}
-                    />
-                    <StatCard
-                        title="Jobs Processed"
-                        value={dashboardData?.jobs?.total?.toLocaleString() || '0'}
-                        change={dashboardData?.jobs?.change || '0%'}
-                        changeType={dashboardData?.jobs?.changeType}
-                        icon={Server}
-                        href={selectedOrg ? `/organizations/${selectedOrg.id}/jobs` : '#'}
-                    />
-                </div>
+                        {/* Title & Description */}
+                        <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-3">
+                            No organization added yet
+                        </h2>
+                        <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-md">
+                            Organizations help you manage and monitor multiple Laravel applications in one place.
+                        </p>
 
-                {/* Quick Actions */}
-                <div className="bg-card border rounded-xl p-6 mb-8">
-                    <h2 className="text-lg font-semibold text-foreground mb-4">Quick Actions</h2>
-                    <div className="flex flex-wrap gap-4">
+                        {/* CTA Button */}
                         <Link
                             href="/organizations/create"
-                            className="inline-flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 transition-colors"
+                            className="inline-flex items-center gap-2 px-6 py-3 bg-cyan-600 hover:bg-cyan-700 text-white font-medium rounded-lg transition-colors"
                         >
-                            <Plus className="w-4 h-4" />
+                            <Plus className="w-5 h-5" />
                             Create Organization
+                            <ChevronRight className="w-4 h-4" />
                         </Link>
-                        {selectedOrg && (
-                            <>
-                                <Link
-                                    href={`/organizations/${selectedOrg.id}/projects/create`}
-                                    className="inline-flex items-center gap-2 px-4 py-2 border rounded-lg hover:bg-accent transition-colors"
-                                >
-                                    <FolderKanban className="w-4 h-4" />
-                                    Add Project
-                                </Link>
-                            </>
-                        )}
                     </div>
                 </div>
 
-                {/* Recent Activity */}
-                <div className="bg-card border rounded-xl p-6">
-                    <h2 className="text-lg font-semibold text-foreground mb-4">Recent Activity</h2>
-                    {dashboardData?.recentActivity?.length > 0 ? (
-                        <div className="space-y-4">
-                            {dashboardData.recentActivity.map((activity, index) => (
-                                <div key={index} className="flex items-center gap-4 py-3 border-b last:border-0">
-                                    <div className={cn(
-                                        'w-2 h-2 rounded-full',
-                                        activity.type === 'error' ? 'bg-red-500' :
-                                        activity.type === 'warning' ? 'bg-yellow-500' :
-                                        'bg-green-500'
-                                    )} />
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-sm text-foreground truncate">{activity.message}</p>
-                                        <p className="text-xs text-muted-foreground">{activity.time}</p>
+                {/* How Watchtower Works */}
+                <div className="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-8">
+                    <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-6">
+                        How Watchtower works
+                    </h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {steps.map((step, index) => {
+                            const Icon = step.icon;
+                            return (
+                                <div key={step.number} className="relative">
+                                    {/* Connector line */}
+                                    {index < steps.length - 1 && (
+                                        <div className="hidden lg:block absolute top-10 left-full w-full h-0.5 bg-slate-200 dark:bg-slate-700 -translate-x-1/2" />
+                                    )}
+                                    <div className="flex flex-col">
+                                        <div className="flex items-center gap-3 mb-3">
+                                            <div className="w-12 h-12 rounded-xl bg-cyan-100 dark:bg-cyan-900/30 flex items-center justify-center">
+                                                <Icon className="w-6 h-6 text-cyan-600 dark:text-cyan-400" />
+                                            </div>
+                                            <span className="text-sm font-mono text-gray-400 dark:text-gray-500">
+                                                {step.number}
+                                            </span>
+                                        </div>
+                                        <h3 className="font-medium text-gray-900 dark:text-white mb-1">
+                                            {step.title}
+                                        </h3>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                                            {step.description}
+                                        </p>
                                     </div>
                                 </div>
-                            ))}
-                        </div>
-                    ) : (
-                        <p className="text-muted-foreground text-sm">No recent activity</p>
-                    )}
+                            );
+                        })}
+                    </div>
                 </div>
             </div>
         </AppLayout>

@@ -1,90 +1,264 @@
 import { Link, usePage } from '@inertiajs/react';
-import { ReactElement } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
     LayoutDashboard,
     Building2,
     FileText,
     HelpCircle,
-    User,
-    LogOut,
     Sun,
     Moon,
+    Monitor,
+    Bell,
+    ChevronDown,
+    User,
+    Settings,
+    LogOut,
 } from 'lucide-react';
 import './app-layout.css';
 
 export default function AppLayout({ children }) {
     const { url, props } = usePage();
-    const user = props.user || { name: 'User', email: 'user@example.com' };
+    const user = props.user || { name: 'Jayashree Patil', email: 'jayshree@serveravatar.com' };
+    const [profileOpen, setProfileOpen] = useState(false);
+    const [themeOpen, setThemeOpen] = useState(false);
+    const profileRef = useRef(null);
+    const themeRef = useRef(null);
 
-    const navigation = [
+    const getInitials = (name) => {
+        return name
+            .split(' ')
+            .map((n) => n[0])
+            .join('')
+            .toUpperCase()
+            .slice(0, 2);
+    };
+
+    const mainNav = [
         { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, current: url === '/dashboard' },
         { name: 'Organizations', href: '/organizations', icon: Building2, current: url.startsWith('/organizations') },
-        { name: 'Documentation', href: '/docs', icon: FileText, current: url.startsWith('/docs') },
-        { name: 'Help & Support', href: '/support', icon: HelpCircle, current: url.startsWith('/support') },
     ];
+
+    const bottomNav = [
+        { name: 'Documentation', href: '/docs', icon: FileText },
+        { name: 'Help & Support', href: '/support', icon: HelpCircle },
+    ];
+
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (profileRef.current && !profileRef.current.contains(event.target)) {
+                setProfileOpen(false);
+            }
+            if (themeRef.current && !themeRef.current.contains(event.target)) {
+                setThemeOpen(false);
+            }
+        }
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const setTheme = (theme) => {
+        if (theme === 'dark') {
+            document.documentElement.classList.add('dark');
+            localStorage.setItem('watchtower_theme', 'dark');
+        } else if (theme === 'light') {
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem('watchtower_theme', 'light');
+        } else {
+            localStorage.removeItem('watchtower_theme');
+            if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        }
+        setThemeOpen(false);
+    };
+
+    const currentTheme = () => {
+        const stored = localStorage.getItem('watchtower_theme');
+        if (stored === 'dark') return 'dark';
+        if (stored === 'light') return 'light';
+        return 'system';
+    };
+
+    const themeIcon = () => {
+        const t = currentTheme();
+        if (t === 'dark') return <Moon className="w-4 h-4" />;
+        if (t === 'light') return <Sun className="w-4 h-4" />;
+        return <Monitor className="w-4 h-4" />;
+    };
 
     return (
         <div className="app-layout">
-            {/* Sidebar */}
-            <aside className="sidebar">
-                {/* Logo */}
-                <div className="sidebar-logo">
-                    <Link href="/dashboard">
+            {/* Top Header Bar */}
+            <header className="top-header">
+                {/* Left: Logo & Branding */}
+                <Link href="/dashboard" className="header-logo">
+                    <img
+                        src="/logos/brand-logo.png"
+                        alt="ServerAvatar Watchtower"
+                        className="h-14 w-auto"
+                    />
+                    <div className="flex flex-col leading-tight -ml-2">
+                        <span className="text-xl font-bold text-gray-900 dark:text-white">
+                            Server<span className="text-cyan-600 dark:text-cyan-400">Avatar</span>
+                        </span>
+                        <div className="flex items-center gap-2">
+                            <span className="h-px flex-1 bg-cyan-600 dark:bg-cyan-400"></span>
+                            <span className="text-xs font-bold text-cyan-600 dark:text-cyan-400 tracking-widest">WATCHTOWER</span>
+                            <span className="h-px flex-1 bg-cyan-600 dark:bg-cyan-400"></span>
+                        </div>
+                    </div>
+                </Link>
+
+                {/* Right: Theme + Notifications + Profile */}
+                <div className="header-right">
+                    {/* Theme Dropdown */}
+                    <div className="dropdown" ref={themeRef}>
+                        <button
+                            onClick={() => setThemeOpen(!themeOpen)}
+                            className="header-icon-btn"
+                            title="Toggle theme"
+                        >
+                            {themeIcon()}
+                        </button>
+                        {themeOpen && (
+                            <div className="dropdown-menu">
+                                <button
+                                    onClick={() => setTheme('light')}
+                                    className={`dropdown-item ${currentTheme() === 'light' ? 'active' : ''}`}
+                                >
+                                    <Sun className="w-4 h-4" />
+                                    <span>Light</span>
+                                </button>
+                                <button
+                                    onClick={() => setTheme('dark')}
+                                    className={`dropdown-item ${currentTheme() === 'dark' ? 'active' : ''}`}
+                                >
+                                    <Moon className="w-4 h-4" />
+                                    <span>Dark</span>
+                                </button>
+                                <button
+                                    onClick={() => setTheme('system')}
+                                    className={`dropdown-item ${currentTheme() === 'system' ? 'active' : ''}`}
+                                >
+                                    <Monitor className="w-4 h-4" />
+                                    <span>System</span>
+                                </button>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Notifications */}
+                    <button className="header-icon-btn" title="Notifications">
+                        <Bell className="w-4 h-4" />
+                    </button>
+
+                    {/* Profile Dropdown */}
+                    <div className="dropdown" ref={profileRef}>
+                        <button
+                            onClick={() => setProfileOpen(!profileOpen)}
+                            className="profile-trigger"
+                        >
+                            <div className="profile-avatar">
+                                <span>{getInitials(user.name)}</span>
+                            </div>
+                            <ChevronDown className={`w-4 h-4 profile-chevron ${profileOpen ? 'rotate-180' : ''}`} />
+                        </button>
+                        {profileOpen && (
+                            <div className="dropdown-menu profile-dropdown">
+                                <div className="dropdown-header">
+                                    <p className="dropdown-user-name">{user.name}</p>
+                                    <p className="dropdown-user-email">{user.email}</p>
+                                </div>
+                                <div className="dropdown-divider" />
+                                <Link href="/settings/profile" className="dropdown-item">
+                                    <User className="w-4 h-4" />
+                                    <span>Profile</span>
+                                </Link>
+                                <Link href="/settings" className="dropdown-item">
+                                    <Settings className="w-4 h-4" />
+                                    <span>Settings</span>
+                                </Link>
+                                <div className="dropdown-divider" />
+                                <form method="POST" action="/logout" className="dropdown-form">
+                                    <input type="hidden" name="_token" />
+                                    <button type="submit" className="dropdown-item dropdown-item-danger">
+                                        <LogOut className="w-4 h-4" />
+                                        <span>Logout</span>
+                                    </button>
+                                </form>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </header>
+
+            <div className="app-body">
+                {/* Sidebar - Dark Theme */}
+                <aside className="sidebar">
+                    {/* Logo */}
+                    <div className="sidebar-logo">
                         <img
                             src="/logos/brand-logo.png"
                             alt="Watchtower"
-                            className="h-8 w-auto"
-                            data-logo-light="/logos/brand-logo.png"
-                            data-logo-dark="/logos/brand-logo.png"
+                            className="sidebar-logo-img"
                         />
-                    </Link>
-                </div>
+                    </div>
 
-                {/* Navigation */}
-                <nav className="sidebar-nav">
-                    {navigation.map((item) => {
-                        const Icon = item.icon;
-                        return (
-                            <Link
-                                key={item.name}
-                                href={item.href}
-                                className={`nav-item ${item.current ? 'active' : ''}`}
-                            >
-                                <Icon className="nav-icon" />
-                                <span>{item.name}</span>
-                            </Link>
-                        );
-                    })}
-                </nav>
+                    {/* Main Navigation */}
+                    <nav className="sidebar-nav">
+                        {mainNav.map((item) => {
+                            const Icon = item.icon;
+                            return (
+                                <Link
+                                    key={item.name}
+                                    href={item.href}
+                                    className={`sidebar-nav-item ${item.current ? 'active' : ''}`}
+                                >
+                                    <Icon className="sidebar-nav-icon" />
+                                    <span>{item.name}</span>
+                                </Link>
+                            );
+                        })}
+                    </nav>
 
-                {/* User Profile at bottom */}
-                <div className="sidebar-footer">
-                    <div className="user-profile">
-                        <div className="user-avatar">
-                            {user.avatar_url ? (
-                                <img src={user.avatar_url} alt={user.name} className="w-5 h-5 rounded-full object-cover" />
-                            ) : (
-                                <User className="w-5 h-5" />
-                            )}
-                        </div>
-                        <div className="user-info">
-                            <p className="user-name">{user.name}</p>
-                            <p className="user-email">{user.email}</p>
+                    {/* Bottom Navigation */}
+                    <div className="sidebar-bottom">
+                        {bottomNav.map((item) => {
+                            const Icon = item.icon;
+                            return (
+                                <Link
+                                    key={item.name}
+                                    href={item.href}
+                                    className="sidebar-nav-item"
+                                >
+                                    <Icon className="sidebar-nav-icon" />
+                                    <span>{item.name}</span>
+                                </Link>
+                            );
+                        })}
+                    </div>
+
+                    {/* User Profile */}
+                    <div className="sidebar-footer">
+                        <div className="sidebar-user">
+                            <div className="sidebar-user-avatar">
+                                <span>{getInitials(user.name)}</span>
+                            </div>
+                            <div className="sidebar-user-info">
+                                <p className="sidebar-user-name">{user.name}</p>
+                                <p className="sidebar-user-role">Administrator</p>
+                            </div>
                         </div>
                     </div>
-                    <form method="POST" action="/logout">
-                        <input type="hidden" name="_token" />
-                        <button type="submit" className="logout-btn" title="Logout">
-                            <LogOut className="w-5 h-5" />
-                        </button>
-                    </form>
-                </div>
-            </aside>
+                </aside>
 
-            {/* Main Content */}
-            <main className="main-content">
-                {children}
-            </main>
+                {/* Main Content */}
+                <main className="main-content">
+                    {children}
+                </main>
+            </div>
         </div>
     );
 }
