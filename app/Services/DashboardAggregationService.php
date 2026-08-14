@@ -201,8 +201,7 @@ class DashboardAggregationService
             ->selectRaw('
                 COUNT(*) as total,
                 SUM(CASE WHEN status_code >= 500 THEN 1 ELSE 0 END) as errors,
-                AVG(duration_ms) as avg_duration,
-                PERCENTILE_CONT(duration_ms, 0.95) as p95_duration
+                AVG(duration_ms) as avg_duration
             ')
             ->first();
 
@@ -210,7 +209,22 @@ class DashboardAggregationService
         $errors = (int) ($stats->errors ?? 0);
         $errorRate = $total > 0 ? round(($errors / $total) * 100, 2) : 0;
         $avgDuration = $stats->avg_duration ? round((float) $stats->avg_duration, 2) : null;
-        $p95Duration = $stats->p95_duration ? round((float) $stats->p95_duration, 2) : null;
+
+        // Calculate P95 in PHP for MariaDB compatibility
+        $p95Duration = null;
+        if ($total > 0) {
+            $durations = RequestEvent::whereIn('project_id', $projectIds)
+                ->where('created_at', '>=', $this->from)
+                ->whereNotNull('duration_ms')
+                ->pluck('duration_ms')
+                ->sort()
+                ->values();
+
+            if ($durations->count() > 0) {
+                $p95Index = (int) floor($durations->count() * 0.95);
+                $p95Duration = round((float) $durations->get($p95Index), 2);
+            }
+        }
 
         return [
             'total' => $total,
@@ -248,7 +262,7 @@ class DashboardAggregationService
 
         $resolved = ExceptionGroup::whereIn('project_id', $projectIds)
             ->where('status', 'resolved')
-            ->where('resolved_at', '>=', $this->from)
+            ->where('updated_at', '>=', $this->from)
             ->count();
 
         return [
