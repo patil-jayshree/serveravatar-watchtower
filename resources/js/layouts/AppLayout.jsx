@@ -3,6 +3,8 @@ import { useState, useRef, useEffect } from 'react';
 import {
     LayoutDashboard,
     Building2,
+    FolderOpen,
+    Settings,
     FileText,
     HelpCircle,
     Sun,
@@ -10,17 +12,22 @@ import {
     Monitor,
     Bell,
     ChevronDown,
+    ChevronRight,
     User,
-    Settings,
     LogOut,
+    Gauge,
 } from 'lucide-react';
 import './app-layout.css';
 
 export default function AppLayout({ children }) {
     const { url, props } = usePage();
     const user = props.user || { name: 'Jayashree Patil', email: 'jayshree@serveravatar.com' };
+    const organizations = props.organizations || [];
+    const selectedOrg = props.selectedOrg;
+
     const [profileOpen, setProfileOpen] = useState(false);
     const [themeOpen, setThemeOpen] = useState(false);
+    const [orgDropdownOpen, setOrgDropdownOpen] = useState(true);
     const profileRef = useRef(null);
     const themeRef = useRef(null);
 
@@ -34,7 +41,7 @@ export default function AppLayout({ children }) {
     };
 
     const mainNav = [
-        { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard, current: url === '/dashboard' },
+        { name: 'Dashboard', href: '/dashboard', icon: Gauge, current: url === '/dashboard' },
         { name: 'Organizations', href: '/organizations', icon: Building2, current: url.startsWith('/organizations') },
     ];
 
@@ -212,6 +219,45 @@ export default function AppLayout({ children }) {
                                 </Link>
                             );
                         })}
+
+                        {/* Organization Dropdown Section */}
+                        {selectedOrg && (
+                            <div className="sidebar-section">
+                                <button
+                                    onClick={() => setOrgDropdownOpen(!orgDropdownOpen)}
+                                    className="sidebar-section-header"
+                                >
+                                    <span className="sidebar-org-name">
+                                        {selectedOrg.name}
+                                    </span>
+                                    <ChevronRight className={`w-4 h-4 sidebar-chevron ${orgDropdownOpen ? 'rotate-90' : ''}`} />
+                                </button>
+                                {orgDropdownOpen && (
+                                    <div className="sidebar-section-items">
+                                        <Link
+                                            href={`/organizations/${selectedOrg.id}`}
+                                            className={`sidebar-nav-item ${url === `/organizations/${selectedOrg.id}` ? 'active' : ''}`}
+                                        >
+                                            <span className="ml-2">Overview</span>
+                                        </Link>
+                                        <Link
+                                            href={`/organizations/${selectedOrg.id}/projects`}
+                                            className={`sidebar-nav-item ${url.startsWith(`/organizations/${selectedOrg.id}/projects`) ? 'active' : ''}`}
+                                        >
+                                            <FolderOpen className="sidebar-nav-icon" />
+                                            <span>Projects</span>
+                                        </Link>
+                                        <Link
+                                            href={`/organizations/${selectedOrg.id}/settings`}
+                                            className={`sidebar-nav-item ${url === `/organizations/${selectedOrg.id}/settings` ? 'active' : ''}`}
+                                        >
+                                            <Settings className="sidebar-nav-icon" />
+                                            <span>Settings</span>
+                                        </Link>
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </nav>
 
                     {/* Bottom Navigation */}
