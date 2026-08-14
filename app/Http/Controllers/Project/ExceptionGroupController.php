@@ -10,8 +10,9 @@ use App\Models\Organization;
 use App\Models\Project;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class ExceptionGroupController extends Controller
 {
@@ -118,18 +119,18 @@ class ExceptionGroupController extends Controller
             'resolved' => (clone $statsQuery)->where('status', 'resolved')->count(),
         ];
 
-        return response()->view('projects.exceptions.index', [
-            'organization' => $project->organization,
-            'project' => $project,
-            'groups' => $groups,
+        return Inertia::render('Projects/Exceptions/Index', [
+            'organization' => [
+                'id' => $project->organization->id,
+                'name' => $project->organization->name,
+            ],
+            'project' => [
+                'id' => $project->id,
+                'name' => $project->name,
+            ],
+            'exceptions' => $groups->items(),
             'stats' => $stats,
             'filters' => $request->only(['status', 'type', 'search', 'environment', 'per_page', 'time_range', 'start_date', 'end_date']),
-            'exceptionTypes' => $project->exceptionGroups()
-                ->select('exception_type')
-                ->distinct()
-                ->orderBy('exception_type')
-                ->pluck('exception_type')
-                ->map(fn ($type) => class_basename($type)),
         ]);
     }
 
@@ -150,11 +151,27 @@ class ExceptionGroupController extends Controller
         $perPage = min((int) $request->input('per_page', 25), 100);
         $occurrences = $query->paginate($perPage);
 
-        return response()->view('projects.exceptions.show', [
-            'organization' => $project->organization,
-            'project' => $project,
-            'group' => $group,
-            'occurrences' => $occurrences,
+        return Inertia::render('Projects/Exceptions/Show', [
+            'organization' => [
+                'id' => $project->organization->id,
+                'name' => $project->organization->name,
+            ],
+            'project' => [
+                'id' => $project->id,
+                'name' => $project->name,
+            ],
+            'exception' => [
+                'id' => $group->id,
+                'uuid' => $group->uuid,
+                'exception_class' => class_basename($group->exception_type),
+                'message' => $group->normalized_message,
+                'status' => $group->status,
+                'occurrence_count' => $group->occurrence_count,
+                'first_occurrence_at' => $group->first_seen_at,
+                'last_occurrence_at' => $group->last_seen_at,
+                'stack_trace' => $group->latestOccurrence?->stack_trace,
+            ],
+            'occurrences' => $occurrences->items(),
         ]);
     }
 

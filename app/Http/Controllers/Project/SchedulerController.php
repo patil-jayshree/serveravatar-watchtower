@@ -13,8 +13,9 @@ use App\Models\Project;
 use App\Models\SchedulerExecution;
 use App\Models\SchedulerTask;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class SchedulerController extends Controller
 {
@@ -68,19 +69,25 @@ class SchedulerController extends Controller
             ->sort()
             ->values();
 
-        return response(view('projects.scheduler.index', [
-            'organization' => $organization,
-            'project' => $project,
-            'tasks' => $tasks,
+        return Inertia::render('Projects/Scheduler/Index', [
+            'organization' => [
+                'id' => $organization->id,
+                'name' => $organization->name,
+            ],
+            'project' => [
+                'id' => $project->id,
+                'name' => $project->name,
+            ],
+            'tasks' => $tasks->items(),
+            'executions' => [],
             'stats' => $stats,
-            'environments' => $environments,
             'filters' => [
                 'search' => $request->input('search', ''),
                 'status' => $request->input('status', 'all'),
                 'environment' => $request->input('environment', 'all'),
                 'time_range' => $request->input('time_range', '24h'),
             ],
-        ]));
+        ]);
     }
 
     /**
@@ -153,11 +160,17 @@ class SchedulerController extends Controller
                 ->first();
         }
 
-        return response(view('projects.scheduler.show', [
-            'organization' => $organization,
-            'project' => $project,
+        return Inertia::render('Projects/Scheduler/Show', [
+            'organization' => [
+                'id' => $organization->id,
+                'name' => $organization->name,
+            ],
+            'project' => [
+                'id' => $project->id,
+                'name' => $project->name,
+            ],
             'task' => $task,
-            'executions' => $executions,
+            'executions' => $executions->items(),
             'executionStats' => $executionStats,
             'commandEvent' => $commandEvent,
             'jobEvent' => $jobEvent,
@@ -166,6 +179,6 @@ class SchedulerController extends Controller
                 'status' => $request->input('status', 'all'),
                 'time_range' => $request->input('time_range', '30d'),
             ],
-        ]));
+        ]);
     }
 }

@@ -8,18 +8,24 @@ use App\Http\Requests\Organization\CreateOrganizationRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class OrganizationController extends Controller
 {
     /**
      * Display a listing of the user's organizations.
      */
-    public function index(): View
+    public function index(): Response
     {
-        $organizations = Auth::user()->organizations()->get();
+        $organizations = Auth::user()->organizations()->get()->map(fn($org) => [
+            'id' => $org->id,
+            'name' => $org->name,
+            'logo_url' => $org->logo_url,
+            'projects_count' => $org->projects()->count(),
+        ]);
 
-        return view('organizations.index', [
+        return Inertia::render('Organizations/Index', [
             'organizations' => $organizations,
         ]);
     }
@@ -27,21 +33,33 @@ class OrganizationController extends Controller
     /**
      * Display the organization's overview.
      */
-    public function show(Request $request): View
+    public function show(Request $request): Response
     {
         $organization = $request->attributes->get('organization');
 
-        return view('organizations.show', [
-            'organization' => $organization,
+        return Inertia::render('Organizations/Show', [
+            'organization' => [
+                'id' => $organization->id,
+                'name' => $organization->name,
+                'logo_url' => $organization->logo_url,
+                'created_at' => $organization->created_at,
+            ],
+            'stats' => [
+                'total_projects' => $organization->projects()->count(),
+                'total_requests' => 0, // Will be populated from events
+                'total_errors' => 0,
+                'avg_response_time' => '0ms',
+            ],
+            'recentProjects' => [], // Will be populated
         ]);
     }
 
     /**
      * Show the form for creating a new organization.
      */
-    public function create(): View
+    public function create(): Response
     {
-        return view('organizations.create');
+        return Inertia::render('Organizations/Create');
     }
 
     /**

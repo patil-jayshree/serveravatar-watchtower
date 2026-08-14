@@ -6,8 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Organization;
 use App\Models\Project;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class RequestEventController extends Controller
 {
@@ -59,10 +60,16 @@ class RequestEventController extends Controller
             'avg_duration' => round($project->requestEvents()->avg('duration_ms') ?? 0),
         ];
 
-        return response()->view('projects.requests.index', [
-            'organization' => $project->organization,
-            'project' => $project,
-            'events' => $events,
+        return Inertia::render('Projects/Requests/Index', [
+            'organization' => [
+                'id' => $project->organization->id,
+                'name' => $project->organization->name,
+            ],
+            'project' => [
+                'id' => $project->id,
+                'name' => $project->name,
+            ],
+            'requests' => $events->items(),
             'stats' => $stats,
             'filters' => $request->only(['method', 'status', 'search', 'environment', 'per_page']),
         ]);
@@ -82,9 +89,15 @@ class RequestEventController extends Controller
             })
             ->firstOrFail();
 
-        return response()->view('projects.requests.show', [
-            'organization' => $project->organization,
-            'project' => $project,
+        return Inertia::render('Projects/Requests/Show', [
+            'organization' => [
+                'id' => $project->organization->id,
+                'name' => $project->organization->name,
+            ],
+            'project' => [
+                'id' => $project->id,
+                'name' => $project->name,
+            ],
             'event' => $event,
         ]);
     }

@@ -11,7 +11,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Project;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class AgentTokenController extends Controller
 {
@@ -44,10 +45,16 @@ class AgentTokenController extends Controller
             ]);
         }
 
-        // Return view
-        return view('projects.agent', [
-            'organization' => $project->organization,
-            'project' => $project,
+        // Return React page
+        return Inertia::render('Projects/Agent', [
+            'organization' => [
+                'id' => $project->organization->id,
+                'name' => $project->organization->name,
+            ],
+            'project' => [
+                'id' => $project->id,
+                'name' => $project->name,
+            ],
             'agentToken' => $token,
             'rawToken' => $rawToken,
             'justGenerated' => $justGenerated,

@@ -15,14 +15,15 @@ use App\Http\Requests\Project\UpdateProjectRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class ProjectController extends Controller
 {
     /**
      * Display a listing of the organization's projects.
      */
-    public function index(Request $request): View
+    public function index(Request $request): Response
     {
         $organization = $request->attributes->get('organization');
 
@@ -51,10 +52,27 @@ class ProjectController extends Controller
             }
         });
 
-        $projects = $query->orderBy('created_at', 'desc')->paginate(10)->withQueryString();
+        $projects = $query->orderBy('created_at', 'desc')->get()->map(fn($p) => [
+            'id' => $p->id,
+            'name' => $p->name,
+            'environment' => $p->environment,
+            'framework' => $p->framework,
+            'status' => $p->status,
+            'is_agent_connected' => $p->is_agent_connected,
+            'environments_count' => 1,
+            'created_at' => $p->created_at,
+            'stats' => [
+                'requests_24h' => 0,
+                'errors_24h' => 0,
+                'avg_response' => '0ms',
+            ],
+        ]);
 
-        return view('projects.index', [
-            'organization' => $organization,
+        return Inertia::render('Projects/Index', [
+            'organization' => [
+                'id' => $organization->id,
+                'name' => $organization->name,
+            ],
             'projects' => $projects,
             'filters' => [
                 'search' => $search,
@@ -68,15 +86,15 @@ class ProjectController extends Controller
     /**
      * Show the form for creating a new project.
      */
-    public function create(Request $request): View
+    public function create(Request $request): Response
     {
         $organization = $request->attributes->get('organization');
 
-        return view('projects.create', [
-            'organization' => $organization,
-            'frameworks' => ProjectFramework::cases(),
-            'environments' => ProjectEnvironment::cases(),
-            'statuses' => ProjectStatus::cases(),
+        return Inertia::render('Projects/Create', [
+            'organization' => [
+                'id' => $organization->id,
+                'name' => $organization->name,
+            ],
         ]);
     }
 
@@ -95,7 +113,7 @@ class ProjectController extends Controller
     /**
      * Display the project's overview.
      */
-    public function show(Request $request): View
+    public function show(Request $request): Response
     {
         $organization = $request->attributes->get('organization');
         $project = $request->attributes->get('project');
@@ -105,12 +123,26 @@ class ProjectController extends Controller
             $timeRange = '24h';
         }
 
-        $overviewService = new ProjectOverviewService($project, $timeRange);
-
-        return view('projects.show', [
-            'organization' => $organization,
-            'project' => $project,
-            'overviewService' => $overviewService,
+        return Inertia::render('Projects/Show', [
+            'organization' => [
+                'id' => $organization->id,
+                'name' => $organization->name,
+            ],
+            'project' => [
+                'id' => $project->id,
+                'name' => $project->name,
+                'environment' => $project->environment,
+                'framework' => $project->framework,
+                'status' => $project->status,
+                'is_agent_connected' => $project->is_agent_connected,
+                'created_at' => $project->created_at,
+            ],
+            'stats' => [
+                'requests_24h' => 0,
+                'errors_24h' => 0,
+                'avg_response' => '0ms',
+                'slow_queries' => 0,
+            ],
             'timeRange' => $timeRange,
         ]);
     }
@@ -118,14 +150,25 @@ class ProjectController extends Controller
     /**
      * Show the form for editing the project.
      */
-    public function edit(Request $request): View
+    public function edit(Request $request): Response
     {
         $organization = $request->attributes->get('organization');
         $project = $request->attributes->get('project');
 
-        return view('projects.edit', [
-            'organization' => $organization,
-            'project' => $project,
+        return Inertia::render('Projects/Edit', [
+            'organization' => [
+                'id' => $organization->id,
+                'name' => $organization->name,
+            ],
+            'project' => [
+                'id' => $project->id,
+                'uuid' => $project->uuid,
+                'name' => $project->name,
+                'description' => $project->description,
+                'framework' => $project->framework,
+                'environment' => $project->environment,
+                'status' => $project->status,
+            ],
             'frameworks' => ProjectFramework::cases(),
             'environments' => ProjectEnvironment::cases(),
             'statuses' => ProjectStatus::cases(),

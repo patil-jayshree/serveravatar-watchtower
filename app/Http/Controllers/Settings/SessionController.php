@@ -9,19 +9,22 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class SessionController extends Controller
 {
     /**
      * Display the sessions settings page.
      */
-    public function index()
+    public function index(): Response
     {
         $sessions = $this->getSessions();
-        
-        return view('settings.sessions', [
+
+        return Inertia::render('Settings/Sessions', [
             'sessions' => $sessions,
             'currentSessionId' => Session::getId(),
+            'status' => session('status'),
         ]);
     }
 

@@ -7,15 +7,17 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\ChangePasswordRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class SecurityController extends Controller
 {
     /**
      * Display the security settings page.
      */
-    public function edit()
+    public function edit(): Response
     {
-        return view('settings.security');
+        return Inertia::render('Settings/Security');
     }
 
     /**

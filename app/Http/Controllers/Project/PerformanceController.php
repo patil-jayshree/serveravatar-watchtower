@@ -7,6 +7,8 @@ use App\Models\Project;
 use App\Services\PerformanceService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class PerformanceController extends Controller
 {
@@ -28,10 +30,21 @@ class PerformanceController extends Controller
 
         $service = new PerformanceService($project, $timeRange);
 
-        return response()->view('projects.performance.index', [
-            'organization' => $project->organization,
-            'project' => $project,
-            'service' => $service,
+        return Inertia::render('Projects/Performance/Index', [
+            'organization' => [
+                'id' => $project->organization->id,
+                'name' => $project->organization->name,
+            ],
+            'project' => [
+                'id' => $project->id,
+                'name' => $project->name,
+            ],
+            'metrics' => [
+                'avg_response_time' => '0ms',
+                'requests_per_second' => 0,
+                'error_rate' => '0',
+                'cpu_usage' => '0',
+            ],
             'timeRange' => $timeRange,
         ]);
     }

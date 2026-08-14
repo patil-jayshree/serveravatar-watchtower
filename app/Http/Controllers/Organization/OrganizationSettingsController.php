@@ -10,19 +10,28 @@ use App\Http\Requests\Organization\UpdateOrganizationRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class OrganizationSettingsController extends Controller
 {
     /**
      * Display the organization's settings.
      */
-    public function edit(Request $request): View
+    public function edit(Request $request): Response
     {
         $organization = $request->attributes->get('organization');
 
-        return view('organizations.settings.edit', [
-            'organization' => $organization,
+        return Inertia::render('Organizations/Settings', [
+            'organization' => [
+                'id' => $organization->id,
+                'uuid' => $organization->uuid,
+                'name' => $organization->name,
+                'logo_url' => $organization->logo_url,
+                'user_id' => $organization->user_id,
+            ],
+            'isOwner' => $organization->user_id === Auth::id(),
+            'status' => session('status'),
         ]);
     }
 

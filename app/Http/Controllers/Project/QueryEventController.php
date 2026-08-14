@@ -7,8 +7,9 @@ use App\Models\Organization;
 use App\Models\Project;
 use App\Models\QueryEvent;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class QueryEventController extends Controller
 {
@@ -67,11 +68,16 @@ class QueryEventController extends Controller
             'avg_duration' => round($project->queryEvents()->avg('duration_ms') ?? 0),
         ];
 
-        return response()->view('projects.queries.index', [
-            'organization' => $project->organization,
-            'project' => $project,
-            'queries' => $queries,
-            'connections' => $connections,
+        return Inertia::render('Projects/Queries/Index', [
+            'organization' => [
+                'id' => $project->organization->id,
+                'name' => $project->organization->name,
+            ],
+            'project' => [
+                'id' => $project->id,
+                'name' => $project->name,
+            ],
+            'queries' => $queries->items(),
             'stats' => $stats,
             'filters' => $request->only(['search', 'type', 'connection', 'slow', 'time_range', 'per_page']),
         ]);
@@ -95,9 +101,15 @@ class QueryEventController extends Controller
                 ->first();
         }
 
-        return response()->view('projects.queries.show', [
-            'organization' => $project->organization,
-            'project' => $project,
+        return Inertia::render('Projects/Queries/Show', [
+            'organization' => [
+                'id' => $project->organization->id,
+                'name' => $project->organization->name,
+            ],
+            'project' => [
+                'id' => $project->id,
+                'name' => $project->name,
+            ],
             'query' => $queryEvent,
             'relatedRequest' => $relatedRequest,
         ]);

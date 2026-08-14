@@ -18,6 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'agent.token' => \App\Http\Middleware\ValidateAgentToken::class,
             'agent.token.telemetry' => \App\Http\Middleware\ValidateAgentTokenForTelemetry::class,
         ]);
+        $middleware->web(append: [
+            \App\Http\Middleware\HandleInertiaRequests::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(

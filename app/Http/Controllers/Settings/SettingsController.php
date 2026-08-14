@@ -3,15 +3,15 @@
 namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
-use Illuminate\View\View;
+use Inertia\Response;
 
 class SettingsController extends Controller
 {
     /**
      * Display the settings page.
      */
-    public function index(): View
+    public function index(): Response
     {
-        return view('settings.index');
+        return Inertia\render('Settings/Index');
     }
 }

@@ -8,26 +8,28 @@ use App\Services\DashboardAggregationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\View\View;
+use Illuminate\Support\Facades\Session;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class DashboardController extends Controller
 {
     /**
      * Display the dashboard.
      */
-    public function show(Request $request): View|RedirectResponse
+    public function show(Request $request): Response|RedirectResponse
     {
         $user = Auth::user();
         $organizations = $user->organizations()->get();
 
-        // Handle no organizations
+        // Handle no organizations - show welcome page
         if ($organizations->isEmpty()) {
-            return view('dashboard', [
-                'user' => $user,
-                'organizations' => $organizations,
-                'selectedOrg' => null,
-                'dashboardData' => null,
-                'timeRange' => '24h',
+            return Inertia::render('Welcome', [
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                ],
             ]);
         }
 
@@ -36,13 +38,11 @@ class DashboardController extends Controller
             $selectedOrg = $organizations->first();
             session(['selected_organization_id' => $selectedOrg->id]);
         } else {
-            // Try to use session, or redirect to org selection
             $selectedOrgId = session('selected_organization_id');
 
             if ($selectedOrgId) {
                 $selectedOrg = $organizations->find($selectedOrgId);
                 if (!$selectedOrg) {
-                    // Invalid session, clear it
                     session()->forget('selected_organization_id');
                     $selectedOrg = null;
                 }
@@ -51,14 +51,14 @@ class DashboardController extends Controller
             }
         }
 
-        // If multiple orgs but none selected, show org selector
+        // If multiple orgs but none selected, show org selector page
         if (!$selectedOrg && $organizations->count() > 1) {
-            return view('dashboard', [
-                'user' => $user,
-                'organizations' => $organizations,
-                'selectedOrg' => null,
-                'dashboardData' => null,
-                'timeRange' => '24h',
+            return Inertia::render('Welcome', [
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                ],
             ]);
         }
 
@@ -72,10 +72,22 @@ class DashboardController extends Controller
         $dashboardService = new DashboardAggregationService($selectedOrg, $timeRange);
         $dashboardData = $dashboardService->getDashboardData();
 
-        return view('dashboard', [
-            'user' => $user,
-            'organizations' => $organizations,
-            'selectedOrg' => $selectedOrg,
+        return Inertia::render('Dashboard', [
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+            ],
+            'organizations' => $organizations->map(fn($org) => [
+                'id' => $org->id,
+                'name' => $org->name,
+                'logo_url' => $org->logo_url,
+            ]),
+            'selectedOrg' => $selectedOrg ? [
+                'id' => $selectedOrg->id,
+                'name' => $selectedOrg->name,
+                'logo_url' => $selectedOrg->logo_url,
+            ] : null,
             'dashboardData' => $dashboardData,
             'timeRange' => $timeRange,
         ]);

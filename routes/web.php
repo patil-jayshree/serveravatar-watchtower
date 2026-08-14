@@ -19,6 +19,7 @@ use App\Http\Controllers\Project\SchedulerController;
 use App\Http\Middleware\LoadCurrentOrganization;
 use App\Http\Middleware\LoadCurrentProject;
 use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,9 +27,12 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
-// Landing Page
+// Landing Page - redirect to dashboard if authenticated, otherwise show landing
 Route::get('/', function () {
-    return view('welcome');
+    if (auth()->check()) {
+        return redirect()->route('dashboard');
+    }
+    return Inertia::render('Landing');
 })->name('home');
 
 // Guest Routes (unauthenticated users only)

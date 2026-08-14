@@ -8,17 +8,22 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\ForgotPasswordRequest;
 use App\Http\Requests\Auth\ResetPasswordRequest;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class PasswordController extends Controller
 {
     /**
      * Display the forgot password view.
      */
-    public function create(): View
+    public function create(): Response
     {
-        return view('auth.forgot-password');
+        return Inertia::render('Auth/ForgotPassword', [
+            'errors' => [],
+            'status' => session('status'),
+        ]);
     }
 
     /**
@@ -35,11 +40,12 @@ class PasswordController extends Controller
     /**
      * Display the reset password view.
      */
-    public function edit(Request $request): View
+    public function edit(Request $request): Response
     {
-        return view('auth.reset-password', [
+        return Inertia::render('Auth/ResetPassword', [
             'email' => $request->query('email'),
             'token' => $request->query('token'),
+            'errors' => session('errors') ? session('errors')->toArray() : [],
         ]);
     }
 

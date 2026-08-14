@@ -9,8 +9,9 @@ use App\Models\CommandEvent;
 use App\Models\Organization;
 use App\Models\Project;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class CommandEventController extends Controller
 {
@@ -81,14 +82,17 @@ class CommandEventController extends Controller
             ->limit(5)
             ->get();
 
-        return response(view('projects.commands.index', [
-            'organization' => $organization,
-            'project' => $project,
-            'commands' => $commands,
-            'environments' => $environments,
+        return Inertia::render('Projects/Commands/Index', [
+            'organization' => [
+                'id' => $organization->id,
+                'name' => $organization->name,
+            ],
+            'project' => [
+                'id' => $project->id,
+                'name' => $project->name,
+            ],
+            'commands' => $commands->items(),
             'stats' => $stats,
-            'slowCommands' => $slowCommands,
-            'slowThreshold' => $slowThreshold,
             'filters' => [
                 'search' => $request->input('search', ''),
                 'status' => $request->input('status', 'all'),
@@ -96,7 +100,7 @@ class CommandEventController extends Controller
                 'environment' => $request->input('environment', 'all'),
                 'time_range' => $request->input('time_range', '24h'),
             ],
-        ]));
+        ]);
     }
 
     /**
@@ -141,14 +145,19 @@ class CommandEventController extends Controller
             ->limit(10)
             ->get();
 
-        return response(view('projects.commands.show', [
-            'organization' => $organization,
-            'project' => $project,
+        return Inertia::render('Projects/Commands/Show', [
+            'organization' => [
+                'id' => $organization->id,
+                'name' => $organization->name,
+            ],
+            'project' => [
+                'id' => $project->id,
+                'name' => $project->name,
+            ],
             'command' => $command,
-            'requestEvent' => $requestEvent,
             'exceptionGroup' => $exceptionGroup,
             'exceptionOccurrence' => $exceptionOccurrence,
             'relatedCommands' => $relatedCommands,
-        ]));
+        ]);
     }
 }

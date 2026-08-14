@@ -6,17 +6,23 @@ use App\Http\Controllers\Controller;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\View\View;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class VerificationController extends Controller
 {
     /**
      * Display the email verification notice.
      */
-    public function notice(Request $request): View
+    public function notice(Request $request): Response
     {
-        return view('auth.verify-email', [
-            'user' => $request->user(),
+        return Inertia::render('Auth/VerifyEmail', [
+            'user' => $request->user() ? [
+                'id' => $request->user()->id,
+                'name' => $request->user()->name,
+                'email' => $request->user()->email,
+            ] : null,
+            'status' => session('status'),
         ]);
     }
 

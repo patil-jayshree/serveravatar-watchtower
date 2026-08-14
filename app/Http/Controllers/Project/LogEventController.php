@@ -7,7 +7,8 @@ use App\Models\ExceptionGroup;
 use App\Models\LogEvent;
 use App\Models\RequestEvent;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class LogEventController extends Controller
 {
@@ -83,12 +84,17 @@ class LogEventController extends Controller
             ->sort()
             ->values();
 
-        return response()->view('projects.logs.index', [
-            'organization' => $project->organization,
-            'project' => $project,
-            'logs' => $logs,
+        return Inertia::render('Projects/Logs/Index', [
+            'organization' => [
+                'id' => $project->organization->id,
+                'name' => $project->organization->name,
+            ],
+            'project' => [
+                'id' => $project->id,
+                'name' => $project->name,
+            ],
+            'logs' => $logs->items(),
             'stats' => $stats,
-            'channels' => $channels,
             'filters' => $filters,
         ]);
     }
@@ -129,9 +135,15 @@ class LogEventController extends Controller
                 ->get();
         }
 
-        return response()->view('projects.logs.show', [
-            'organization' => $project->organization,
-            'project' => $project,
+        return Inertia::render('Projects/Logs/Show', [
+            'organization' => [
+                'id' => $project->organization->id,
+                'name' => $project->organization->name,
+            ],
+            'project' => [
+                'id' => $project->id,
+                'name' => $project->name,
+            ],
             'log' => $log,
             'relatedRequest' => $relatedRequest,
             'relatedExceptionGroup' => $relatedExceptionGroup,

@@ -9,8 +9,9 @@ use App\Models\JobEvent;
 use App\Models\Organization;
 use App\Models\Project;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class JobEventController extends Controller
 {
@@ -83,14 +84,17 @@ class JobEventController extends Controller
             ->limit(5)
             ->get();
 
-        return response()->view('projects.jobs.index', [
-            'organization' => $project->organization,
-            'project' => $project,
-            'jobs' => $jobs,
-            'queues' => $queues,
-            'connections' => $connections,
+        return Inertia::render('Projects/Jobs/Index', [
+            'organization' => [
+                'id' => $project->organization->id,
+                'name' => $project->organization->name,
+            ],
+            'project' => [
+                'id' => $project->id,
+                'name' => $project->name,
+            ],
+            'jobs' => $jobs->items(),
             'stats' => $stats,
-            'failedJobsByName' => $failedJobsByName,
             'filters' => $request->only(['search', 'status', 'queue', 'connection', 'time_range', 'per_page']),
         ]);
     }
@@ -116,9 +120,15 @@ class JobEventController extends Controller
         // Get related exception group for failed jobs
         $relatedExceptionGroup = $job->getRelatedExceptionGroup();
 
-        return response()->view('projects.jobs.show', [
-            'organization' => $project->organization,
-            'project' => $project,
+        return Inertia::render('Projects/Jobs/Show', [
+            'organization' => [
+                'id' => $project->organization->id,
+                'name' => $project->organization->name,
+            ],
+            'project' => [
+                'id' => $project->id,
+                'name' => $project->name,
+            ],
             'job' => $job,
             'relatedRequest' => $relatedRequest,
             'relatedExceptionGroup' => $relatedExceptionGroup,
