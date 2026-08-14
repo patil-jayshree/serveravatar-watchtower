@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Project;
 
 use App\Actions\Project\CreateProject;
+use App\Services\ProjectOverviewService;
 use App\Actions\Project\DeleteProject;
 use App\Actions\Project\UpdateProject;
 use App\Enums\Project\ProjectEnvironment;
@@ -99,9 +100,18 @@ class ProjectController extends Controller
         $organization = $request->attributes->get('organization');
         $project = $request->attributes->get('project');
 
+        $timeRange = $request->input('range', '24h');
+        if (!in_array($timeRange, ['1h', '24h', '7d', '30d'])) {
+            $timeRange = '24h';
+        }
+
+        $overviewService = new ProjectOverviewService($project, $timeRange);
+
         return view('projects.show', [
             'organization' => $organization,
             'project' => $project,
+            'overviewService' => $overviewService,
+            'timeRange' => $timeRange,
         ]);
     }
 
