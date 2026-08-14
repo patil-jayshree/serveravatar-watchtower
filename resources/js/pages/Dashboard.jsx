@@ -183,11 +183,10 @@ export default function Dashboard() {
                         {/* CTA Button */}
                         <Link
                             href="/organizations/create"
-                            className="inline-flex items-center gap-2 px-6 py-3 bg-cyan-600 hover:bg-cyan-700 text-white font-medium rounded-lg transition-colors"
+                            className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-colors"
                         >
                             <Plus className="w-5 h-5" />
                             Create Organization
-                            <ChevronRight className="w-4 h-4" />
                         </Link>
                     </div>
                 </div>
