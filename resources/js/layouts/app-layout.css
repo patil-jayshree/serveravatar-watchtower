@@ -64,7 +64,7 @@
     flex: 1;
 }
 
-/* Sidebar - Dark Theme */
+/* Sidebar - Light Theme */
 .sidebar {
     width: 260px;
     background: var(--sidebar-bg);
@@ -322,22 +322,22 @@
     background: var(--bg-primary);
 }
 
-/* CSS Variables - Light Theme */
+/* CSS Variables - Light Theme (default) */
 :root {
     --bg-primary: #ffffff;
     --header-bg: #ffffff;
-    --sidebar-bg: #1e293b;
-    --border: #334155;
-    --hover-bg: rgba(255, 255, 255, 0.05);
-    --text-primary: #f1f5f9;
-    --text-muted: #94a3b8;
+    --sidebar-bg: #f8fafc;
+    --border: #e5e7eb;
+    --hover-bg: rgba(0, 0, 0, 0.04);
+    --text-primary: #1e293b;
+    --text-muted: #64748b;
     --primary: #0891b2;
-    --primary-light: rgba(8, 145, 178, 0.15);
+    --primary-light: rgba(8, 145, 178, 0.1);
     --danger: #dc2626;
     --danger-light: #fef2f2;
 }
 
-/* Dark Mode (default for this design) */
+/* Dark Mode */
 .dark {
     --bg-primary: #0f172a;
     --header-bg: #1e293b;
