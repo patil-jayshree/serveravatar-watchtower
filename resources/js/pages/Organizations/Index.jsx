@@ -43,50 +43,45 @@ export default function OrganizationsIndex() {
     return (
         <AppLayout>
             <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
-                {/* Page Header */}
-                <div className="bg-white dark:bg-slate-800 border-b border-gray-200 dark:border-slate-700">
-                    <div className="max-w-7xl mx-auto px-8 py-6">
-                        {/* Top Row: Title + Create Button */}
-                        <div className="flex items-center justify-between mb-6">
-                            <div>
-                                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-                                    Organizations
-                                </h1>
-                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                                    Manage and monitor your organizations and their projects.
-                                </p>
-                            </div>
-                            <Link
-                                href="/organizations/create"
-                                className="inline-flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors shadow-sm"
-                            >
-                                <Plus className="w-4 h-4" />
-                                Create Organization
-                            </Link>
+                <div className="max-w-7xl mx-auto px-8 py-8">
+                    {/* Page Header: Title + Button */}
+                    <div className="flex items-center justify-between mb-6">
+                        <div>
+                            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                                Organizations
+                            </h1>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                Manage and monitor your organizations and their projects.
+                            </p>
                         </div>
-
-                        {/* Search + Filter Row */}
-                        <div className="flex items-center gap-3">
-                            <div className="relative w-80">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                                <input
-                                    type="text"
-                                    placeholder="Search organizations..."
-                                    value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                                />
-                            </div>
-                            <button className="inline-flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-900 border border-gray-200 dark:border-slate-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-800 transition-colors">
-                                <Filter className="w-4 h-4" />
-                                Filter
-                            </button>
-                        </div>
+                        <Link
+                            href="/organizations/create"
+                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-lg text-sm font-medium transition-colors"
+                        >
+                            <Plus className="w-4 h-4" />
+                            Create Organization
+                        </Link>
                     </div>
-                </div>
 
-                {/* Content Area */}
-                <div className="max-w-7xl mx-auto px-8 py-6">
+                    {/* Controls: Search + Filter */}
+                    <div className="flex items-center gap-3 mb-6">
+                        <div className="relative w-80">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                            <input
+                                type="text"
+                                placeholder="Search organizations..."
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                            />
+                        </div>
+                        <button className="inline-flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors">
+                            <Filter className="w-4 h-4" />
+                            Filter
+                        </button>
+                    </div>
+
+                    {/* Content */}
                     {filteredOrgs.length > 0 ? (
                         <>
                             {/* Organizations Grid */}
@@ -96,7 +91,6 @@ export default function OrganizationsIndex() {
                                         key={org.id}
                                         href={`/organizations/${org.id}`}
                                         className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-6 hover:border-purple-300 dark:hover:border-purple-600 transition-all group"
-                                        style={{ boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)' }}
                                     >
                                         {/* Top Row: Avatar + Name + Status */}
                                         <div className="flex items-start justify-between mb-5">
