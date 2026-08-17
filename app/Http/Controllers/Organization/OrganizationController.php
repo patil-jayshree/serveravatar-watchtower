@@ -18,16 +18,68 @@ class OrganizationController extends Controller
      */
     public function index(): Response
     {
-        $organizations = Auth::user()->organizations()->get()->map(fn($org) => [
-            'id' => $org->id,
-            'name' => $org->name,
-            'logo_url' => $org->logo_url,
-            'projects_count' => $org->projects()->count(),
-        ]);
+        $organizations = Auth::user()->organizations()->get()->map(function ($org) {
+            $projects = $org->projects;
+            $total = $projects->count();
+            $connected = $projects->where('is_connected', true)->count();
+
+            $healthy = 0;
+            $warning = 0;
+            $critical = 0;
+
+            foreach ($projects->where('is_connected', true) as $project) {
+                $health = $this->calculateProjectHealth($project);
+                if ($health === 'healthy') $healthy++;
+                elseif ($health === 'warning') $warning++;
+                elseif ($health === 'critical') $critical++;
+            }
+
+            return [
+                'id' => $org->id,
+                'name' => $org->name,
+                'logo_url' => $org->logo_url,
+                'status' => $connected > 0 ? 'active' : 'inactive',
+                'created_at' => $org->created_at?->format('M d, Y'),
+                'projects_count' => $total,
+                'stats' => [
+                    'healthy' => $healthy,
+                    'warning' => $warning,
+                    'critical' => $critical,
+                ],
+            ];
+        });
 
         return Inertia::render('Organizations/Index', [
             'organizations' => $organizations,
         ]);
+    }
+
+    /**
+     * Calculate project health.
+     */
+    private function calculateProjectHealth($project): string
+    {
+        $errorCount = $project->exceptionGroups()
+            ->whereIn('status', ['open', 'new'])
+            ->count();
+
+        $failedJobs = $project->jobEvents()
+            ->where('status', 'failed')
+            ->count();
+
+        $failedCommands = $project->commandEvents()
+            ->where('exit_code', '!=', 0)
+            ->count();
+
+        if ($errorCount > 10 || $failedJobs > 5 || $failedCommands > 5) {
+            return 'critical';
+        }
+
+        if ($errorCount > 0 || $failedJobs > 0 || $failedCommands > 0) {
+            return 'warning';
+        }
+
+        return 'healthy';
     }
 
     /**
@@ -46,11 +98,11 @@ class OrganizationController extends Controller
             ],
             'stats' => [
                 'total_projects' => $organization->projects()->count(),
-                'total_requests' => 0, // Will be populated from events
+                'total_requests' => 0,
                 'total_errors' => 0,
                 'avg_response_time' => '0ms',
             ],
-            'recentProjects' => [], // Will be populated
+            'recentProjects' => [],
         ]);
     }
 
