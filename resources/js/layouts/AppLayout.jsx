@@ -46,16 +46,16 @@ export default function AppLayout({ children }) {
             current: url === '/dashboard',
         },
         {
-            name: 'Projects',
-            href: '/all-projects',
-            icon: FolderOpen,
-            current: url === '/all-projects',
-        },
-        {
             name: 'Organizations',
             href: '/organizations',
             icon: Building2,
             current: url.startsWith('/organizations'),
+        },
+        {
+            name: 'Projects',
+            href: '/all-projects',
+            icon: FolderOpen,
+            current: url === '/all-projects',
         },
     ];
 
