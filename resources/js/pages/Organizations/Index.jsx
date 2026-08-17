@@ -226,13 +226,10 @@ export default function OrganizationsIndex() {
                                             </div>
                                         )}
 
-                                        {/* Card Link */}
-                                        <Link
-                                            href={`/organizations/${org.id}`}
-                                            className="block"
-                                        >
+                                        {/* Card Content */}
+                                        <div>
                                             {/* Top Row: Avatar + Name + Status */}
-                                            <div className="flex items-start justify-between mb-5 pr-8">
+                                            <div className="flex items-start justify-between mb-5">
                                                 <div className="flex items-center gap-3">
                                                     {/* Org Avatar */}
                                                     {org.logo_url ? (
@@ -247,7 +244,7 @@ export default function OrganizationsIndex() {
                                                         </div>
                                                     )}
                                                     <div>
-                                                        <h3 className="font-semibold text-gray-900 dark:text-white text-base group-hover:text-cyan-600 dark:group-hover:text-cyan-400">
+                                                        <h3 className="font-semibold text-gray-900 dark:text-white text-base">
                                                             {org.name}
                                                         </h3>
                                                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
@@ -308,13 +305,16 @@ export default function OrganizationsIndex() {
                                             </div>
 
                                             {/* Open Button - Full Width */}
-                                            <div className="w-full">
+                                            <Link
+                                                href={`/organizations/${org.id}`}
+                                                className="block w-full"
+                                            >
                                                 <span className="inline-flex items-center justify-center gap-2 w-full px-4 py-3 bg-cyan-50 dark:bg-cyan-900/20 hover:bg-cyan-100 dark:hover:bg-cyan-900/30 text-cyan-700 dark:text-cyan-400 rounded-lg text-sm font-medium transition-colors">
                                                     Open Organization
                                                     <ArrowRight className="w-4 h-4" />
                                                 </span>
-                                            </div>
-                                        </Link>
+                                            </Link>
+                                        </div>
                                     </div>
                                 ))}
                             </div>
