@@ -46,6 +46,42 @@ class DashboardAggregationService
     }
 
     /**
+     * Get the "yesterday" period from timestamp (same duration, just before the current period).
+     */
+    protected function getYesterdayRange(): array
+    {
+        $duration = match ($this->timeRange) {
+            '1h' => Carbon::now()->subHours(2)->subHour(),
+            '24h' => Carbon::now()->subHours(48),
+            '7d' => Carbon::now()->subDays(14),
+            '30d' => Carbon::now()->subDays(60),
+            default => Carbon::now()->subHours(48),
+        };
+        return [
+            'from' => $duration->toDateTimeString(),
+            'to' => Carbon::parse($this->from)->toDateTimeString(),
+        ];
+    }
+
+    /**
+     * Calculate percentage change from yesterday.
+     */
+    protected function getChangePercent(int $current, int $previous): ?array
+    {
+        if ($previous === 0) {
+            return $current > 0
+                ? ['value' => $current, 'percent' => $current * 100, 'direction' => 'up']
+                : ['value' => 0, 'percent' => 0, 'direction' => 'neutral'];
+        }
+        $change = (($current - $previous) / $previous) * 100;
+        return [
+            'value' => abs((int) round($change)),
+            'percent' => abs((int) round($change)),
+            'direction' => $change > 0 ? 'up' : ($change < 0 ? 'down' : 'neutral'),
+        ];
+    }
+
+    /**
      * Get the from date for queries.
      */
     public function getFrom(): string
@@ -83,6 +119,7 @@ class DashboardAggregationService
             'health' => $this->getHealthSummary(),
             'recent_activity' => $this->getRecentActivity(),
             'projects_needing_attention' => $this->getProjectsNeedingAttention(),
+            'top_projects' => $this->getTopProjects(),
         ];
     }
 
@@ -131,6 +168,7 @@ class DashboardAggregationService
             'warning' => $healthCounts['warning'],
             'critical' => $healthCounts['critical'],
             'no_data' => $healthCounts['no_data'],
+            'change' => $this->getProjectCountChange($total, $healthCounts['healthy'], $healthCounts['warning'], $healthCounts['critical']),
         ];
     }
 
@@ -179,6 +217,22 @@ class DashboardAggregationService
         return 'healthy';
     }
 
+    /**
+     * Get change data for project count stats.
+     */
+    protected function getProjectCountChange(int $total, int $healthy, int $warning, int $critical): array
+    {
+        $yesterday = $this->getYesterdayRange();
+        $projectIds = $this->organization->projects()->pluck('id');
+
+        $prevProjects = DB::table('projects')
+            ->where('organization_id', $this->organization->id)
+            ->where('created_at', '<', $this->from)
+            ->count();
+
+        $change = $this->getChangePercent($total, $prevProjects);
+        return $change;
+    }
     /**
      * Get requests summary across all org projects.
      */
@@ -232,7 +286,69 @@ class DashboardAggregationService
             'error_rate' => $errorRate,
             'avg_duration_ms' => $avgDuration,
             'p95_duration_ms' => $p95Duration,
+            'chart_data' => $this->getRequestChartData($projectIds),
+            'change' => $this->getRequestChange($projectIds),
         ];
+    }
+
+    /**
+     * Get request chart data grouped by hour.
+     */
+    protected function getRequestChartData($projectIds): array
+    {
+        $from = Carbon::parse($this->from);
+        $bucketCount = $this->timeRange === '1h' ? 4 : ($this->timeRange === '24h' ? 24 : 24);
+        $labels = [];
+        $requests = [];
+        $errors = [];
+
+        for ($i = 0; $i < $bucketCount; $i++) {
+            $bucketFrom = (clone $from)->addHours($i);
+            $bucketTo = (clone $bucketFrom)->addHour();
+
+            if ($this->timeRange === '7d' || $this->timeRange === '30d') {
+                $bucketFrom = (clone $from)->addDays($i);
+                $bucketTo = (clone $bucketFrom)->addDay();
+            }
+
+            $label = $bucketFrom->format('H:i');
+            if ($this->timeRange === '7d' || $this->timeRange === '30d') {
+                $label = $bucketFrom->format('M d');
+            }
+
+            $reqCount = RequestEvent::whereIn('project_id', $projectIds)
+                ->whereBetween('created_at', [$bucketFrom->toDateTimeString(), $bucketTo->toDateTimeString()])
+                ->count();
+
+            $errCount = RequestEvent::whereIn('project_id', $projectIds)
+                ->whereBetween('created_at', [$bucketFrom->toDateTimeString(), $bucketTo->toDateTimeString()])
+                ->where('status_code', '>=', 500)
+                ->count();
+
+            $labels[] = $label;
+            $requests[] = (int) $reqCount;
+            $errors[] = (int) $errCount;
+        }
+
+        return ['labels' => $labels, 'requests' => $requests, 'errors' => $errors];
+    }
+
+    /**
+     * Get request change from yesterday.
+     */
+    protected function getRequestChange($projectIds): array
+    {
+        $yesterday = $this->getYesterdayRange();
+
+        $currentTotal = RequestEvent::whereIn('project_id', $projectIds)
+            ->where('created_at', '>=', $this->from)
+            ->count();
+
+        $prevTotal = RequestEvent::whereIn('project_id', $projectIds)
+            ->whereBetween('created_at', [$yesterday['from'], $yesterday['to']])
+            ->count();
+
+        return $this->getChangePercent($currentTotal, $prevTotal);
     }
 
     /**
@@ -525,5 +641,60 @@ class DashboardAggregationService
         }
 
         return $needsAttention;
+    }
+
+    /**
+     * Get top projects by request volume.
+     */
+    protected function getTopProjects(): array
+    {
+        $yesterday = $this->getYesterdayRange();
+        $projectIds = $this->organization->projects()->pluck('id');
+
+        $stats = DB::table('request_events')
+            ->whereIn('project_id', $projectIds)
+            ->where('created_at', '>=', $this->from)
+            ->select('project_id', DB::raw('COUNT(*) as total_requests'), DB::raw("SUM(CASE WHEN status_code >= 400 THEN 1 ELSE 0 END) as total_errors"))
+            ->groupBy('project_id')
+            ->get()
+            ->keyBy('project_id');
+
+        $yesterdayStats = DB::table('request_events')
+            ->whereIn('project_id', $projectIds)
+            ->whereBetween('created_at', [$yesterday['from'], $yesterday['to']])
+            ->select('project_id', DB::raw('COUNT(*) as total_requests'))
+            ->groupBy('project_id')
+            ->get()
+            ->keyBy('project_id');
+
+        $result = [];
+        foreach ($this->organization->projects as $project) {
+            $current = $stats[$project->id] ?? null;
+            $prev = $yesterdayStats[$project->id] ?? null;
+
+            $requests = $current ? (int) $current->total_requests : 0;
+            $errors = $current ? (int) $current->total_errors : 0;
+            $yesterdayRequests = $prev ? (int) $prev->total_requests : 0;
+
+            $change = $this->getChangePercent($requests, $yesterdayRequests);
+            $errorRate = $requests > 0 ? round(($errors / $requests) * 100, 2) : 0;
+            $health = $this->calculateProjectHealth($project);
+
+            $result[] = [
+                'id' => $project->id,
+                'uuid' => $project->uuid,
+                'name' => $project->name,
+                'organization_id' => $this->organization->id,
+                'organization_name' => $this->organization->name,
+                'requests' => $requests,
+                'errors' => $errors,
+                'error_rate' => $errorRate,
+                'status' => $health,
+                'change' => $change,
+            ];
+        }
+
+        usort($result, fn($a, $b) => $b['requests'] <=> $a['requests']);
+        return $result;
     }
 }
