@@ -42,7 +42,7 @@ export default function OrganizationsIndex() {
 
     return (
         <AppLayout>
-            <div className="min-h-screen bg-gray-50 dark:bg-slate-900">
+            <div className="min-h-full bg-gray-50 dark:bg-slate-900">
                 <div className="max-w-7xl mx-auto px-8 py-8">
                     {/* Page Header: Title + Button */}
                     <div className="flex items-center justify-between mb-6">
