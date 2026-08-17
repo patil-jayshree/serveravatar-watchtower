@@ -89,12 +89,22 @@ class OrganizationController extends Controller
     {
         $organization = $request->attributes->get('organization');
 
+        $projects = $organization->projects()->get()->map(fn($p) => [
+            'id' => $p->id,
+            'name' => $p->name,
+            'environment' => $p->environment,
+            'framework' => $p->framework,
+            'status' => $p->status,
+            'is_agent_connected' => $p->is_agent_connected,
+            'created_at' => $p->created_at?->format('M d, Y'),
+        ]);
+
         return Inertia::render('Organizations/Show', [
             'organization' => [
                 'id' => $organization->id,
                 'name' => $organization->name,
                 'logo_url' => $organization->logo_url,
-                'created_at' => $organization->created_at,
+                'created_at' => $organization->created_at?->format('M d, Y'),
             ],
             'stats' => [
                 'total_projects' => $organization->projects()->count(),
@@ -102,7 +112,7 @@ class OrganizationController extends Controller
                 'total_errors' => 0,
                 'avg_response_time' => '0ms',
             ],
-            'recentProjects' => [],
+            'projects' => $projects,
         ]);
     }
 
