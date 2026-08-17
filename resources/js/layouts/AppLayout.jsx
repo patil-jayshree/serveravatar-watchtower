@@ -1,21 +1,17 @@
 import { Link, usePage } from '@inertiajs/react';
 import { useState, useRef, useEffect } from 'react';
 import {
-    LayoutDashboard,
     Building2,
-    FolderOpen,
-    Settings,
+    ChevronDown,
     FileText,
+    Gauge,
     HelpCircle,
-    Sun,
+    LogOut,
     Moon,
     Monitor,
-    Bell,
-    ChevronDown,
-    ChevronRight,
+    Settings,
+    Sun,
     User,
-    LogOut,
-    Gauge,
 } from 'lucide-react';
 import './app-layout.css';
 
@@ -27,9 +23,10 @@ export default function AppLayout({ children }) {
 
     const [profileOpen, setProfileOpen] = useState(false);
     const [themeOpen, setThemeOpen] = useState(false);
-    const [orgDropdownOpen, setOrgDropdownOpen] = useState(true);
+    const [orgSwitcherOpen, setOrgSwitcherOpen] = useState(false);
     const profileRef = useRef(null);
     const themeRef = useRef(null);
+    const orgSwitcherRef = useRef(null);
 
     const getInitials = (name) => {
         return name
@@ -41,8 +38,18 @@ export default function AppLayout({ children }) {
     };
 
     const mainNav = [
-        { name: 'Dashboard', href: '/dashboard', icon: Gauge, current: url === '/dashboard' },
-        { name: 'Organizations', href: '/organizations', icon: Building2, current: url.startsWith('/organizations') },
+        {
+            name: 'Dashboard',
+            href: '/dashboard',
+            icon: Gauge,
+            current: url === '/dashboard',
+        },
+        {
+            name: 'Organizations',
+            href: '/organizations',
+            icon: Building2,
+            current: url.startsWith('/organizations'),
+        },
     ];
 
     const bottomNav = [
@@ -57,6 +64,9 @@ export default function AppLayout({ children }) {
             }
             if (themeRef.current && !themeRef.current.contains(event.target)) {
                 setThemeOpen(false);
+            }
+            if (orgSwitcherRef.current && !orgSwitcherRef.current.contains(event.target)) {
+                setOrgSwitcherOpen(false);
             }
         }
         document.addEventListener('mousedown', handleClickOutside);
@@ -158,7 +168,7 @@ export default function AppLayout({ children }) {
 
                     {/* Notifications */}
                     <button className="header-icon-btn" title="Notifications">
-                        <Bell className="w-4 h-4" />
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
                     </button>
 
                     {/* Profile Dropdown */}
@@ -202,7 +212,7 @@ export default function AppLayout({ children }) {
             </header>
 
             <div className="app-body">
-                {/* Sidebar - Light Theme */}
+                {/* Sidebar */}
                 <aside className="sidebar">
                     {/* Main Navigation */}
                     <nav className="sidebar-nav">
@@ -219,45 +229,6 @@ export default function AppLayout({ children }) {
                                 </Link>
                             );
                         })}
-
-                        {/* Organization Dropdown Section */}
-                        {selectedOrg && (
-                            <div className="sidebar-section">
-                                <button
-                                    onClick={() => setOrgDropdownOpen(!orgDropdownOpen)}
-                                    className="sidebar-section-header"
-                                >
-                                    <span className="sidebar-org-name">
-                                        {selectedOrg.name}
-                                    </span>
-                                    <ChevronRight className={`w-4 h-4 sidebar-chevron ${orgDropdownOpen ? 'rotate-90' : ''}`} />
-                                </button>
-                                {orgDropdownOpen && (
-                                    <div className="sidebar-section-items">
-                                        <Link
-                                            href={`/organizations/${selectedOrg.id}`}
-                                            className={`sidebar-nav-item ${url === `/organizations/${selectedOrg.id}` ? 'active' : ''}`}
-                                        >
-                                            <span className="ml-2">Overview</span>
-                                        </Link>
-                                        <Link
-                                            href={`/organizations/${selectedOrg.id}/projects`}
-                                            className={`sidebar-nav-item ${url.startsWith(`/organizations/${selectedOrg.id}/projects`) ? 'active' : ''}`}
-                                        >
-                                            <FolderOpen className="sidebar-nav-icon" />
-                                            <span>Projects</span>
-                                        </Link>
-                                        <Link
-                                            href={`/organizations/${selectedOrg.id}/settings`}
-                                            className={`sidebar-nav-item ${url === `/organizations/${selectedOrg.id}/settings` ? 'active' : ''}`}
-                                        >
-                                            <Settings className="sidebar-nav-icon" />
-                                            <span>Settings</span>
-                                        </Link>
-                                    </div>
-                                )}
-                            </div>
-                        )}
                     </nav>
 
                     {/* Bottom Navigation */}
