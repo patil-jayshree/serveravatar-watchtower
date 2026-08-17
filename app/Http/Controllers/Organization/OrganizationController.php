@@ -38,7 +38,7 @@ class OrganizationController extends Controller
                 'id' => $org->id,
                 'name' => $org->name,
                 'logo_url' => $org->logo_url,
-                'status' => $connected > 0 ? 'active' : 'inactive',
+                'status' => $total > 0 ? 'active' : 'inactive',
                 'created_at' => $org->created_at?->format('M d, Y'),
                 'projects_count' => $total,
                 'stats' => [

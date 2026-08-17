@@ -6,9 +6,6 @@ import {
     Plus,
     Search,
     ArrowRight,
-    CheckCircle2,
-    AlertTriangle,
-    XCircle,
 } from 'lucide-react';
 
 export default function OrganizationsIndex() {
@@ -120,8 +117,7 @@ export default function OrganizationsIndex() {
                                                 <span className="text-2xl font-bold text-emerald-500">
                                                     {org.stats?.healthy || 0}
                                                 </span>
-                                                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1">
-                                                    <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                                                <span className="text-xs font-medium text-emerald-500 mt-1">
                                                     Healthy
                                                 </span>
                                             </div>
@@ -130,8 +126,7 @@ export default function OrganizationsIndex() {
                                                 <span className="text-2xl font-bold text-amber-500">
                                                     {org.stats?.warning || 0}
                                                 </span>
-                                                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1">
-                                                    <AlertTriangle className="w-3 h-3 text-amber-500" />
+                                                <span className="text-xs font-medium text-amber-500 mt-1">
                                                     Warning
                                                 </span>
                                             </div>
@@ -140,8 +135,7 @@ export default function OrganizationsIndex() {
                                                 <span className="text-2xl font-bold text-red-500">
                                                     {org.stats?.critical || 0}
                                                 </span>
-                                                <span className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-1 flex items-center gap-1">
-                                                    <XCircle className="w-3 h-3 text-red-500" />
+                                                <span className="text-xs font-medium text-red-500 mt-1">
                                                     Critical
                                                 </span>
                                             </div>
