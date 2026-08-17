@@ -201,6 +201,15 @@
     animation: dropdownFadeIn 0.15s ease;
 }
 
+@keyframes spinOnce {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 @keyframes dropdownFadeIn {
     from {
         opacity: 0;
@@ -392,4 +401,9 @@
 
 .animate-slide-up {
     animation: slideUp 0.3s ease-out;
+}
+
+/* Spin Once Animation */
+.animate-spin_once {
+    animation: spinOnce 0.6s ease-in-out forwards;
 }

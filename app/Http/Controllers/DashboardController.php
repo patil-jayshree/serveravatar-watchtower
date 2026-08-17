@@ -51,15 +51,10 @@ class DashboardController extends Controller
             }
         }
 
-        // If multiple orgs but none selected, show org selector page
+        // If multiple orgs but none selected, auto-select the org with most projects
         if (!$selectedOrg && $organizations->count() > 1) {
-            return Inertia::render('Welcome', [
-                'user' => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                ],
-            ]);
+            $selectedOrg = $organizations->withCount('projects')->orderBy('projects_count', 'desc')->first();
+            session(['selected_organization_id' => $selectedOrg->id]);
         }
 
         // Get time range from request or default
@@ -71,6 +66,13 @@ class DashboardController extends Controller
         // Get dashboard aggregation data
         $dashboardService = new DashboardAggregationService($selectedOrg, $timeRange);
         $dashboardData = $dashboardService->getDashboardData();
+
+        // Get global stats across all organizations
+        $globalStats = [
+            'total_organizations' => $organizations->count(),
+            'total_projects' => $organizations->sum(fn($org) => $org->projects()->count()),
+            'connected_projects' => $organizations->sum(fn($org) => $org->projects()->where('is_connected', true)->count()),
+        ];
 
         return Inertia::render('Dashboard', [
             'user' => [
@@ -88,6 +90,7 @@ class DashboardController extends Controller
                 'name' => $selectedOrg->name,
                 'logo_url' => $selectedOrg->logo_url,
             ] : null,
+            'globalStats' => $globalStats,
             'dashboardData' => $dashboardData,
             'timeRange' => $timeRange,
         ]);

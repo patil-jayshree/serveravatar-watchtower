@@ -18,7 +18,8 @@ class CreateProject
         return Project::create([
             'name' => $data['name'],
             'description' => $data['description'] ?? null,
-            'framework' => $data['framework'],
+            'url' => $data['url'] ?? null,
+            'framework' => 'laravel',
             'environment' => $data['environment'],
             'status' => $data['status'] ?? 'active',
             'organization_id' => $organization->id,

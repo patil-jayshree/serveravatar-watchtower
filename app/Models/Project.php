@@ -21,10 +21,11 @@ class Project extends Model
      *
      * @var array<int, string>
      */
-    #[Fillable(['name', 'description', 'framework', 'environment', 'status', 'organization_id'])]
+    #[Fillable(['name', 'description', 'url', 'framework', 'environment', 'status', 'organization_id'])]
     protected $fillable = [
         'name',
         'description',
+        'url',
         'framework',
         'environment',
         'status',

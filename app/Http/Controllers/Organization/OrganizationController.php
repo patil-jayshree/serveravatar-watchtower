@@ -105,15 +105,30 @@ class OrganizationController extends Controller
         $perPage = (int) $request->get('per_page', 4);
         $projectsPaginated = $organization->projects()->paginate($perPage);
 
-        $projects = $projectsPaginated->map(fn($p) => [
-            'id' => $p->id,
-            'name' => $p->name,
-            'environment' => $p->environment,
-            'framework' => $p->framework,
-            'status' => $p->status,
-            'is_agent_connected' => $p->is_agent_connected,
-            'created_at' => $p->created_at?->format('M d, Y'),
-        ]);
+        $projects = $projectsPaginated->map(function ($p) {
+            $totalRequests = $p->requestEvents()->count();
+            $totalErrors = $p->exceptionGroups()->count();
+            $errorRate = $totalRequests > 0 ? round(($totalErrors / $totalRequests) * 100, 2) : 0;
+
+            return [
+                'id' => $p->id,
+                'name' => $p->name,
+                'description' => $p->description,
+                'url' => $p->url,
+                'environment' => $p->environment,
+                'framework' => $p->framework,
+                'status' => $p->status,
+                'is_agent_connected' => $p->is_connected,
+                'last_activity_at' => $p->last_connected_at?->diffForHumans() ?? 'No activity',
+                'created_at' => $p->created_at?->format('M d, Y'),
+                'stats' => [
+                    'requests' => $totalRequests,
+                    'requests_formatted' => $totalRequests >= 1000 ? round($totalRequests / 1000, 1) . 'K' : $totalRequests,
+                    'errors' => $totalErrors,
+                    'error_rate' => $errorRate,
+                ],
+            ];
+        });
 
         return Inertia::render('Organizations/Show', [
             'organization' => [

@@ -1,5 +1,5 @@
 import { Link, usePage } from '@inertiajs/react';
-import { useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import AppLayout from '@/layouts/AppLayout';
 import {
     Activity,
@@ -42,7 +42,7 @@ Chart.register(
 );
 
 export default function Dashboard() {
-    const { user, organizations, selectedOrg, dashboardData, timeRange } = usePage().props;
+    const { user, organizations, selectedOrg, globalStats, dashboardData, timeRange } = usePage().props;
 
     const timeRangeLabel = {
         '1h': 'Last 1 Hour',
@@ -58,7 +58,7 @@ export default function Dashboard() {
     const recentActivity = dashboardData?.recent_activity || [];
     const topProjects = dashboardData?.top_projects || [];
 
-    const totalProjects = summary.total_projects || 0;
+    const totalProjects = summary.total || 0;
     const healthyCount = summary.healthy || 0;
     const warningCount = summary.warning || 0;
     const criticalCount = summary.critical || 0;
@@ -68,25 +68,32 @@ export default function Dashboard() {
     const lineCanvasRef = useRef(null);
     const doughnutChartRef = useRef(null);
     const lineChartRef = useRef(null);
+    const [isSpinning, setIsSpinning] = useState(false);
 
     useEffect(() => {
         if (!doughnutCanvasRef.current || !lineCanvasRef.current) return;
 
-        // Donut chart
+        // Donut chart - ensure at least some data for visibility
         if (doughnutChartRef.current) doughnutChartRef.current.destroy();
+        const chartData = [healthyCount, warningCount, criticalCount, noDataCount];
+        const totalData = chartData.reduce((a, b) => a + b, 0);
+        
+        // If all zeros, show placeholder data to make chart visible
+        const displayData = totalData === 0 ? [0, 0, 0, 1] : chartData;
+        
         doughnutChartRef.current = new Chart(doughnutCanvasRef.current, {
             type: 'doughnut',
             data: {
                 labels: ['Healthy', 'Warning', 'Critical', 'No Data'],
                 datasets: [{
-                    data: [healthyCount, warningCount, criticalCount, noDataCount],
-                    backgroundColor: ['#10b981', '#f59e0b', '#ef4444', '#9ca3af'],
+                    data: displayData,
+                    backgroundColor: ['#10b981', '#f59e0b', '#ef4444', totalData === 0 ? '#9ca3af' : '#9ca3af'],
                     borderWidth: 0,
                     hoverOffset: 4,
                 }],
             },
             options: {
-                responsive: false,
+                responsive: true,
                 maintainAspectRatio: false,
                 cutout: '70%',
                 animation: { duration: 600 },
@@ -162,7 +169,7 @@ export default function Dashboard() {
             if (doughnutChartRef.current) doughnutChartRef.current.destroy();
             if (lineChartRef.current) lineChartRef.current.destroy();
         };
-    }, [dashboardData]);
+    }, [dashboardData, healthyCount, warningCount, criticalCount, noDataCount]);
 
     const activityStatusColor = {
         critical: 'bg-red-500',
@@ -174,16 +181,16 @@ export default function Dashboard() {
     const statCards = [
         {
             title: 'Organizations',
-            value: organizations?.length || 0,
-            change: summary?.change || null,
+            value: globalStats?.total_organizations || 0,
+            change: null,
             icon: Building2,
-            iconBg: 'bg-purple-100 dark:bg-purple-900/30',
-            iconColor: 'text-purple-600 dark:text-purple-400',
+            iconBg: 'bg-cyan-100 dark:bg-cyan-900/30',
+            iconColor: 'text-cyan-600 dark:text-cyan-400',
         },
         {
             title: 'Projects',
-            value: totalProjects,
-            change: summary?.change || null,
+            value: globalStats?.total_projects || 0,
+            change: null,
             icon: FolderOpen,
             iconBg: 'bg-blue-100 dark:bg-blue-900/30',
             iconColor: 'text-blue-600 dark:text-blue-400',
@@ -239,7 +246,7 @@ export default function Dashboard() {
                         {/* Time Range Dropdown */}
                         <div className="relative">
                             <select
-                                defaultValue={timeRange}
+                                value={timeRange}
                                 onChange={(e) => {
                                     window.location.href = `/dashboard?range=${e.target.value}`;
                                 }}
@@ -253,11 +260,14 @@ export default function Dashboard() {
                             <ChevronDown className="w-4 h-4 absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
                         </div>
                         <button
-                            onClick={() => window.location.reload()}
+                            onClick={() => {
+                                setIsSpinning(true);
+                                window.location.reload();
+                            }}
                             className="p-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors"
                             title="Refresh"
                         >
-                            <RefreshCw className="w-4 h-4" />
+                            <RefreshCw className={`w-4 h-4 ${isSpinning ? 'animate-spin_once' : ''}`} />
                         </button>
                     </div>
                 </div>
@@ -320,11 +330,11 @@ export default function Dashboard() {
                         {/* Chart + Legend side by side */}
                         <div className="flex items-center gap-6">
                             {/* Donut Chart */}
-                            <div className="relative flex-shrink-0" style={{ width: 160, height: 160 }}>
-                                <canvas ref={doughnutCanvasRef} width="160" height="160" />
+                            <div className="relative flex-shrink-0 w-40 h-40">
+                                <canvas ref={doughnutCanvasRef} />
                                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                                     <div className="text-center">
-                                        <div className="text-2xl font-bold text-gray-900 dark:text-white">{totalProjects}</div>
+                                        <div className="text-2xl font-bold text-gray-900 dark:text-white">{globalStats?.total_projects || 0}</div>
                                         <div className="text-xs text-gray-500">Total</div>
                                     </div>
                                 </div>

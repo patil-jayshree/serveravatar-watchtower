@@ -90,11 +90,27 @@ class ProjectController extends Controller
     {
         $organization = $request->attributes->get('organization');
 
+        // If organization is set (from org-scoped route), don't show dropdown
+        // If not set (from global route), show organization dropdown
+        if ($organization) {
+            return Inertia::render('Projects/Create', [
+                'organization' => [
+                    'id' => $organization->id,
+                    'name' => $organization->name,
+                ],
+                'organizations' => null,
+            ]);
+        }
+
+        // Global create - get all organizations for dropdown
+        $organizations = Auth::user()->organizations()->get()->map(fn($org) => [
+            'id' => $org->id,
+            'name' => $org->name,
+        ]);
+
         return Inertia::render('Projects/Create', [
-            'organization' => [
-                'id' => $organization->id,
-                'name' => $organization->name,
-            ],
+            'organization' => null,
+            'organizations' => $organizations,
         ]);
     }
 

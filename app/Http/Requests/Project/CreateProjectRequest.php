@@ -28,7 +28,7 @@ class CreateProjectRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:1000'],
-            'framework' => ['required', 'string', Rule::in(ProjectFramework::values())],
+            'url' => ['nullable', 'url', 'max:500'],
             'environment' => ['required', 'string', Rule::in(ProjectEnvironment::values())],
             'status' => ['sometimes', 'string', Rule::in(ProjectStatus::values())],
         ];
@@ -45,8 +45,8 @@ class CreateProjectRequest extends FormRequest
             'name.required' => 'Project name is required.',
             'name.max' => 'Project name cannot exceed 255 characters.',
             'description.max' => 'Description cannot exceed 1000 characters.',
-            'framework.required' => 'Please select a framework.',
-            'framework.in' => 'Selected framework is not valid.',
+            'url.url' => 'Please enter a valid URL.',
+            'url.max' => 'URL cannot exceed 500 characters.',
             'environment.required' => 'Please select an environment.',
             'environment.in' => 'Selected environment is not valid.',
             'status.in' => 'Selected status is not valid.',
