@@ -3,7 +3,6 @@ import { useState } from 'react';
 import AppLayout from '@/layouts/AppLayout';
 import {
     Building2,
-    Filter,
     Plus,
     Search,
     ArrowRight,
@@ -52,7 +51,7 @@ export default function OrganizationsIndex() {
                         </Link>
                     </div>
 
-                    {/* Controls: Search + Filter */}
+                    {/* Controls: Search */}
                     <div className="flex items-center gap-3 mb-6">
                         <div className="relative w-80">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -64,10 +63,6 @@ export default function OrganizationsIndex() {
                                 className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
                             />
                         </div>
-                        <button className="inline-flex items-center gap-2 px-4 py-2.5 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors">
-                            <Filter className="w-4 h-4" />
-                            Filter
-                        </button>
                     </div>
 
                     {/* Content */}
