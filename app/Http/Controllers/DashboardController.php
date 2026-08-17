@@ -53,7 +53,7 @@ class DashboardController extends Controller
 
         // If multiple orgs but none selected, auto-select the org with most projects
         if (!$selectedOrg && $organizations->count() > 1) {
-            $selectedOrg = $organizations->withCount('projects')->orderBy('projects_count', 'desc')->first();
+            $selectedOrg = $user->organizations()->withCount('projects')->get()->sortByDesc('projects_count')->first();
             session(['selected_organization_id' => $selectedOrg->id]);
         }
 
