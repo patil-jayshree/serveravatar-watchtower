@@ -21,6 +21,8 @@ class CreateOrganizationRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'min:2', 'max:255'],
+            'description' => ['nullable', 'string', 'max:1000'],
+            'logo' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif,svg', 'max:2048'],
         ];
     }
 

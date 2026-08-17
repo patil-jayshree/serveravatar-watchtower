@@ -17,10 +17,11 @@ class Organization extends Model
      *
      * @var array<int, string>
      */
-    #[Fillable(['name', 'logo_path', 'user_id'])]
+    #[Fillable(['name', 'logo_path', 'description', 'user_id'])]
     protected $fillable = [
         'name',
         'logo_path',
+        'description',
         'user_id',
     ];
 

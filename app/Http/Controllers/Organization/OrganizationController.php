@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Organization;
 
 use App\Actions\Organization\CreateOrganization;
+use App\Actions\Organization\UpdateLogo;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Organization\CreateOrganizationRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -16,9 +18,12 @@ class OrganizationController extends Controller
     /**
      * Display a listing of the user's organizations.
      */
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $organizations = Auth::user()->organizations()->get()->map(function ($org) {
+        $perPage = (int) $request->get('per_page', 4);
+        $orgsPaginated = Auth::user()->organizations()->paginate($perPage);
+
+        $organizations = $orgsPaginated->map(function ($org) {
             $projects = $org->projects;
             $total = $projects->count();
             $connected = $projects->where('is_connected', true)->count();
@@ -37,7 +42,9 @@ class OrganizationController extends Controller
             return [
                 'id' => $org->id,
                 'name' => $org->name,
-                'logo_url' => $org->logo_url,
+                'slug' => $org->slug ?? Str::slug($org->name),
+                'description' => $org->description,
+                'logo_url' => $org->logo_url ?? $org->default_logo_url,
                 'status' => $total > 0 ? 'active' : 'inactive',
                 'created_at' => $org->created_at?->format('M d, Y'),
                 'projects_count' => $total,
@@ -51,6 +58,12 @@ class OrganizationController extends Controller
 
         return Inertia::render('Organizations/Index', [
             'organizations' => $organizations,
+            'orgs_pagination' => [
+                'current_page' => $orgsPaginated->currentPage(),
+                'last_page' => $orgsPaginated->lastPage(),
+                'per_page' => $orgsPaginated->perPage(),
+                'total' => $orgsPaginated->total(),
+            ],
         ]);
     }
 
@@ -89,7 +102,10 @@ class OrganizationController extends Controller
     {
         $organization = $request->attributes->get('organization');
 
-        $projects = $organization->projects()->get()->map(fn($p) => [
+        $perPage = (int) $request->get('per_page', 4);
+        $projectsPaginated = $organization->projects()->paginate($perPage);
+
+        $projects = $projectsPaginated->map(fn($p) => [
             'id' => $p->id,
             'name' => $p->name,
             'environment' => $p->environment,
@@ -113,6 +129,12 @@ class OrganizationController extends Controller
                 'avg_response_time' => '0ms',
             ],
             'projects' => $projects,
+            'projects_pagination' => [
+                'current_page' => $projectsPaginated->currentPage(),
+                'last_page' => $projectsPaginated->lastPage(),
+                'per_page' => $projectsPaginated->perPage(),
+                'total' => $projectsPaginated->total(),
+            ],
         ]);
     }
 
@@ -129,8 +151,76 @@ class OrganizationController extends Controller
      */
     public function store(CreateOrganizationRequest $request, CreateOrganization $action): RedirectResponse
     {
-        $organization = $action->execute(Auth::user(), $request->validated());
+        $validated = $request->validated();
 
-        return redirect()->route('organizations.show', $organization)->with('status', 'Organization created successfully.');
+        // Remove logo from validated data (we handle it separately)
+        unset($validated['logo']);
+
+        // Create organization
+        $organization = $action->execute(Auth::user(), $validated);
+
+        // Handle logo upload if present
+        if ($request->hasFile('logo')) {
+            $logoAction = app(UpdateLogo::class);
+            $logoAction->execute($organization, $request->file('logo'));
+        }
+
+        return redirect()->route('organizations.index')->with('status', 'Organization created successfully.');
+    }
+
+    /**
+     * Show the form for editing the organization.
+     */
+    public function edit(Request $request): Response
+    {
+        $organization = $request->attributes->get('organization');
+
+        return Inertia::render('Organizations/Index', [
+            'editingOrganization' => [
+                'id' => $organization->id,
+                'name' => $organization->name,
+                'description' => $organization->description,
+                'logo_url' => $organization->logo_url,
+            ],
+        ]);
+    }
+
+    /**
+     * Update the organization.
+     */
+    public function update(Request $request): RedirectResponse
+    {
+        $organization = $request->attributes->get('organization');
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string|max:1000',
+            'logo' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ]);
+
+        // Handle logo upload using UpdateLogo action
+        if ($request->hasFile('logo')) {
+            $logoAction = app(UpdateLogo::class);
+            $logoAction->execute($organization, $request->file('logo'));
+        }
+
+        $organization->update([
+            'name' => $validated['name'],
+            'description' => $validated['description'] ?? null,
+        ]);
+
+        return redirect()->back();
+    }
+
+    /**
+     * Delete the organization.
+     */
+    public function destroy(Request $request): RedirectResponse
+    {
+        $organization = $request->attributes->get('organization');
+
+        $organization->delete();
+
+        return redirect()->route('organizations.index')->with('status', 'Organization deleted successfully.');
     }
 }

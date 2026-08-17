@@ -1,4 +1,4 @@
-import { Link, usePage } from '@inertiajs/react';
+import { Link, usePage, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/AppLayout';
 import { Building2, Plus, ArrowRight, Wifi, WifiOff, Server } from 'lucide-react';
 
@@ -26,7 +26,7 @@ const steps = [
 ];
 
 export default function OrganizationShow() {
-    const { organization, projects } = usePage().props;
+    const { organization, projects, projects_pagination } = usePage().props;
 
     return (
         <AppLayout>
@@ -169,12 +169,52 @@ export default function OrganizationShow() {
                                 ))}
                             </div>
 
-                            {/* Pagination Placeholder */}
-                            <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-slate-700">
-                                <p className="text-sm text-gray-500 dark:text-gray-400">
-                                    Showing {projects.length} of {projects.length} projects
-                                </p>
-                            </div>
+                            {/* Pagination */}
+                            {projects_pagination && projects_pagination.last_page > 1 && (
+                                <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-slate-700">
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                        Showing {projects.length} of {projects_pagination.total} projects
+                                    </p>
+                                    <div className="flex items-center gap-1">
+                                        {projects_pagination.current_page > 1 && (
+                                            <button
+                                                onClick={() => router.get(`/organizations/${organization.id}?page=${projects_pagination.current_page - 1}&per_page=${projects_pagination.per_page}`)}
+                                                className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
+                                            >
+                                                Previous
+                                            </button>
+                                        )}
+                                        {Array.from({ length: projects_pagination.last_page }, (_, i) => i + 1).map((page) => (
+                                            <button
+                                                key={page}
+                                                onClick={() => router.get(`/organizations/${organization.id}?page=${page}&per_page=${projects_pagination.per_page}`)}
+                                                className={`w-8 h-8 text-sm rounded-lg transition-colors ${
+                                                    page === projects_pagination.current_page
+                                                        ? 'bg-cyan-600 text-white'
+                                                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-slate-700'
+                                                }`}
+                                            >
+                                                {page}
+                                            </button>
+                                        ))}
+                                        {projects_pagination.current_page < projects_pagination.last_page && (
+                                            <button
+                                                onClick={() => router.get(`/organizations/${organization.id}?page=${projects_pagination.current_page + 1}&per_page=${projects_pagination.per_page}`)}
+                                                className="px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
+                                            >
+                                                Next
+                                            </button>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+                            {(!projects_pagination || projects_pagination.last_page <= 1) && (
+                                <div className="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-slate-700">
+                                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                                        Showing {projects.length} of {projects_pagination?.total || projects.length} projects
+                                    </p>
+                                </div>
+                            )}
                         </>
                     ) : (
                         /* Empty State */

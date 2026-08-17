@@ -1,21 +1,21 @@
-import { Link, useForm } from '@inertiajs/react';
+import { Link, router, useForm } from '@inertiajs/react';
 import AppLayout from '@/layouts/AppLayout';
 import { ArrowLeft, Check, Upload } from 'lucide-react';
 import { useState } from 'react';
 
 export default function CreateOrganization() {
     const [logoPreview, setLogoPreview] = useState(null);
-    const { data, setData, post, processing, errors } = useForm({
+    const [logoFile, setLogoFile] = useState(null);
+    const { data, setData, processing, errors } = useForm({
         name: '',
         slug: '',
         description: '',
-        logo: null,
     });
 
     const handleLogoChange = (e) => {
         const file = e.target.files[0];
         if (file) {
-            setData('logo', file);
+            setLogoFile(file);
             const reader = new FileReader();
             reader.onloadend = () => {
                 setLogoPreview(reader.result);
@@ -26,7 +26,28 @@ export default function CreateOrganization() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        post('/organizations');
+        const options = {
+            onSuccess: () => {
+                // Redirect will happen automatically
+            },
+            onError: () => {
+                // Handle error
+            },
+        };
+        if (logoFile) {
+            const formData = new FormData();
+            formData.append('name', data.name);
+            formData.append('slug', data.slug);
+            formData.append('description', data.description);
+            formData.append('logo', logoFile);
+            router.post('/organizations', formData, options);
+        } else {
+            router.post('/organizations', {
+                name: data.name,
+                slug: data.slug,
+                description: data.description,
+            }, options);
+        }
     };
 
     return (

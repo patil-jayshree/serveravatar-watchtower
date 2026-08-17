@@ -74,6 +74,9 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware([LoadCurrentOrganization::class])->prefix('organizations/{organization}')->name('organizations.')->group(function () {
         // Overview
         Route::get('/', [OrganizationController::class, 'show'])->name('show');
+        Route::match(['get', 'put'], '/edit', [OrganizationController::class, 'edit'])->name('edit');
+        Route::put('/', [OrganizationController::class, 'update'])->name('update');
+        Route::delete('/', [OrganizationController::class, 'destroy'])->name('destroy');
 
         // Settings
         Route::get('/settings', [OrganizationSettingsController::class, 'edit'])->name('settings');

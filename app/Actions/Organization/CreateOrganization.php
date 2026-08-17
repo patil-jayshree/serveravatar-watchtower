@@ -17,6 +17,8 @@ class CreateOrganization
     {
         return Organization::create([
             'name' => $data['name'],
+            'slug' => $data['slug'] ?? null,
+            'description' => $data['description'] ?? null,
             'logo_path' => $data['logo_path'] ?? null,
             'user_id' => $user->id,
         ]);
