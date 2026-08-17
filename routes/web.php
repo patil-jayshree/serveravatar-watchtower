@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\PasswordController;
 use App\Http\Controllers\Auth\VerificationController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\GlobalProjectController;
 use App\Http\Controllers\Organization\OrganizationController;
 use App\Http\Controllers\Organization\OrganizationMemberController;
 use App\Http\Controllers\Organization\OrganizationSettingsController;
@@ -59,6 +60,9 @@ Route::middleware(['auth'])->group(function () {
     // Dashboard (verified middleware disabled for development)
     // TODO: Add 'verified' middleware for production
     Route::get('/dashboard', [DashboardController::class, 'show'])->name('dashboard');
+
+    // Global Projects (all projects across all organizations)
+    Route::get('/all-projects', [GlobalProjectController::class, 'index'])->name('all-projects.index');
 
     // Organization Routes - MUST define literal routes BEFORE {organization} wildcard
     Route::get('/organizations/create', [OrganizationController::class, 'create'])->name('organizations.create');

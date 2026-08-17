@@ -4,6 +4,7 @@ import {
     Building2,
     ChevronDown,
     FileText,
+    FolderOpen,
     Gauge,
     HelpCircle,
     LogOut,
@@ -43,6 +44,12 @@ export default function AppLayout({ children }) {
             href: '/dashboard',
             icon: Gauge,
             current: url === '/dashboard',
+        },
+        {
+            name: 'Projects',
+            href: '/all-projects',
+            icon: FolderOpen,
+            current: url === '/all-projects',
         },
         {
             name: 'Organizations',
