@@ -32,6 +32,7 @@ class GlobalProjectController extends Controller
                     'framework' => $project->framework,
                     'status' => $project->status,
                     'is_agent_connected' => $project->is_agent_connected,
+                    'uuid' => $project->uuid,
                     'organization_id' => $project->organization_id,
                     'organization_name' => $project->organization?->name,
                     'created_at' => $project->created_at?->format('M d, Y'),
