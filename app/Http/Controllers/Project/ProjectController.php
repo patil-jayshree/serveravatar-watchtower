@@ -54,7 +54,9 @@ class ProjectController extends Controller
 
         $projects = $query->orderBy('created_at', 'desc')->get()->map(fn($p) => [
             'id' => $p->id,
+            'uuid' => $p->uuid,
             'name' => $p->name,
+            'organization_id' => $organization->id,
             'environment' => $p->environment,
             'framework' => $p->framework,
             'status' => $p->status,
@@ -143,14 +145,17 @@ class ProjectController extends Controller
             'organization' => [
                 'id' => $organization->id,
                 'name' => $organization->name,
+                'logo_url' => $organization->logo_url,
             ],
             'project' => [
                 'id' => $project->id,
+                'uuid' => $project->uuid,
                 'name' => $project->name,
                 'environment' => $project->environment,
                 'framework' => $project->framework,
                 'status' => $project->status,
                 'is_agent_connected' => $project->is_agent_connected,
+                'is_connected' => $project->is_connected,
                 'created_at' => $project->created_at,
             ],
             'stats' => [

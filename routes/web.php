@@ -16,6 +16,7 @@ use App\Http\Controllers\Project\LogEventController;
 use App\Http\Controllers\Project\ProjectController;
 use App\Http\Controllers\Project\QueryEventController;
 use App\Http\Controllers\Project\RequestEventController;
+use App\Http\Controllers\Project\AgentController;
 use App\Http\Controllers\Project\SchedulerController;
 use App\Http\Middleware\LoadCurrentOrganization;
 use App\Http\Middleware\LoadCurrentProject;
@@ -94,11 +95,11 @@ Route::middleware(['auth'])->group(function () {
             Route::put('/projects/{project}', [ProjectController::class, 'update'])->name('projects.update');
             Route::delete('/projects/{project}', [ProjectController::class, 'destroy'])->name('projects.destroy');
 
-            // Agent Token Routes
-            Route::get('/projects/{project}/agent', [AgentTokenController::class, 'show'])->name('projects.agent.show');
-            Route::post('/projects/{project}/agent', [AgentTokenController::class, 'store'])->name('projects.agent.store');
-            Route::put('/projects/{project}/agent', [AgentTokenController::class, 'update'])->name('projects.agent.update');
-            Route::delete('/projects/{project}/agent', [AgentTokenController::class, 'destroy'])->name('projects.agent.destroy');
+            // Agent Routes
+            Route::get('/projects/{project}/agent', [AgentController::class, 'show'])->name('projects.agent.show');
+            Route::post('/projects/{project}/agent/generate', [AgentController::class, 'generate'])->name('projects.agent.generate');
+            Route::post('/projects/{project}/agent/regenerate', [AgentController::class, 'regenerate'])->name('projects.agent.regenerate');
+            Route::delete('/projects/{project}/agent', [AgentController::class, 'revoke'])->name('projects.agent.revoke');
 
             // Request Events Routes
             Route::get('/projects/{project}/requests', [RequestEventController::class, 'index'])->name('projects.requests.index');

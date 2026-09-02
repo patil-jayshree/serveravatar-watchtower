@@ -328,7 +328,7 @@ export default function OrganizationShow() {
 
                                             {/* Arrow Box - Clickable */}
                                             <Link
-                                                href={`/organizations/${organization.id}/projects/${project.id}`}
+                                                href={`/organizations/${organization.id}/projects/${project.uuid}`}
                                                 className="flex items-center justify-center w-10 h-10 rounded-lg bg-gray-100 dark:bg-slate-700 hover:bg-cyan-100 dark:hover:bg-cyan-900/40 transition-colors flex-shrink-0 ml-auto"
                                             >
                                                 <ArrowRight className="w-5 h-5 text-gray-400 hover:text-cyan-600 dark:hover:text-cyan-400" />

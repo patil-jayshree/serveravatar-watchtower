@@ -112,6 +112,7 @@ class OrganizationController extends Controller
 
             return [
                 'id' => $p->id,
+                'uuid' => $p->uuid,
                 'name' => $p->name,
                 'description' => $p->description,
                 'url' => $p->url,

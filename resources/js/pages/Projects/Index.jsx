@@ -70,7 +70,7 @@ export default function ProjectsIndex() {
                                 {filteredProjects.map((project) => (
                                     <Link
                                         key={project.id}
-                                        href={`/organizations/${project.organization_id}/projects/${project.id}`}
+                                        href={`/organizations/${project.organization_id}/projects/${project.uuid}`}
                                         className="bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 p-6 hover:border-cyan-300 dark:hover:border-cyan-600 transition-all group"
                                     >
                                         {/* Top Row: Avatar + Name + Org */}

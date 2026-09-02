@@ -372,7 +372,7 @@ export default function Dashboard() {
                             {topProjects.filter(p => p.status !== 'healthy').slice(0, 4).map((project) => (
                                 <Link
                                     key={project.id}
-                                    href={`/organizations/${project.organization_id}/projects/${project.id}`}
+                                    href={`/organizations/${project.organization_id}/projects/${project.uuid}`}
                                     className="flex items-center justify-between p-3 rounded-lg bg-gray-50 dark:bg-slate-700/50 hover:bg-gray-100 dark:hover:bg-slate-700 transition-colors"
                                 >
                                     <div className="flex items-center gap-3">
@@ -524,7 +524,7 @@ export default function Dashboard() {
                                 return (
                                     <Link
                                         key={project.id}
-                                        href={`/organizations/${project.organization_id}/projects/${project.id}`}
+                                        href={`/organizations/${project.organization_id}/projects/${project.uuid}`}
                                         className="block group"
                                     >
                                         <div className="flex items-center justify-between mb-1">

@@ -1,17 +1,25 @@
 import { Link, usePage } from '@inertiajs/react';
 import AppLayout from '@/layouts/AppLayout';
-import { Activity, AlertCircle, Clock, Database, Terminal } from 'lucide-react';
+import { Activity, AlertCircle, Clock, Database, Terminal, Cpu, Key } from 'lucide-react';
 
 export default function ProjectShow() {
-    const { project } = usePage().props;
+    const { project, organization } = usePage().props;
     const links = [
-        { name: 'Exceptions', href: `/projects/${project?.id}/exceptions`, icon: AlertCircle, color: 'red' },
-        { name: 'Jobs', href: `/projects/${project?.id}/jobs`, icon: Clock, color: 'blue' },
-        { name: 'Queries', href: `/projects/${project?.id}/queries`, icon: Database, color: 'purple' },
-        { name: 'Commands', href: `/projects/${project?.id}/commands`, icon: Terminal, color: 'green' },
-        { name: 'Requests', href: `/projects/${project?.id}/requests`, icon: Activity, color: 'orange' },
+        { name: 'Agent', href: `/organizations/${organization?.id}/projects/${project?.uuid}/agent`, icon: Cpu, color: 'cyan' },
+        { name: 'Exceptions', href: `/organizations/${organization?.id}/projects/${project?.uuid}/exceptions`, icon: AlertCircle, color: 'red' },
+        { name: 'Jobs', href: `/organizations/${organization?.id}/projects/${project?.uuid}/jobs`, icon: Clock, color: 'blue' },
+        { name: 'Queries', href: `/organizations/${organization?.id}/projects/${project?.uuid}/queries`, icon: Database, color: 'purple' },
+        { name: 'Commands', href: `/organizations/${organization?.id}/projects/${project?.uuid}/commands`, icon: Terminal, color: 'green' },
+        { name: 'Requests', href: `/organizations/${organization?.id}/projects/${project?.uuid}/requests`, icon: Activity, color: 'orange' },
     ];
-    const colors = { red: 'bg-red-100 dark:bg-red-900/30 text-red-600', blue: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600', purple: 'bg-purple-100 dark:bg-purple-900/30 text-purple-600', green: 'bg-green-100 dark:bg-green-900/30 text-green-600', orange: 'bg-orange-100 dark:bg-orange-900/30 text-orange-600' };
+    const colors = { 
+        red: 'bg-red-100 dark:bg-red-900/30 text-red-600', 
+        blue: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600', 
+        purple: 'bg-purple-100 dark:bg-purple-900/30 text-purple-600', 
+        green: 'bg-green-100 dark:bg-green-900/30 text-green-600', 
+        orange: 'bg-orange-100 dark:bg-orange-900/30 text-orange-600',
+        cyan: 'bg-cyan-100 dark:bg-cyan-900/30 text-cyan-600'
+    };
     return (
         <AppLayout>
             <div className="p-8">
