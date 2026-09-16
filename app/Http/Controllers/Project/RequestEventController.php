@@ -64,14 +64,22 @@ class RequestEventController extends Controller
             'organization' => [
                 'id' => $project->organization->id,
                 'name' => $project->organization->name,
+                'uuid' => $project->organization->uuid,
             ],
             'project' => [
                 'id' => $project->id,
+                'uuid' => $project->uuid,
                 'name' => $project->name,
             ],
             'requests' => $events->items(),
             'stats' => $stats,
             'filters' => $request->only(['method', 'status', 'search', 'environment', 'per_page']),
+            'pagination' => [
+                'current_page' => $events->currentPage(),
+                'last_page' => $events->lastPage(),
+                'per_page' => $events->perPage(),
+                'total' => $events->total(),
+            ],
         ]);
     }
 
@@ -83,6 +91,7 @@ class RequestEventController extends Controller
 
         // Support both uuid and request_id lookup
         $event = $project->requestEvents()
+            ->with(['logs'])
             ->where(function ($query) use ($uuid) {
                 $query->where('uuid', $uuid)
                     ->orWhere('request_id', $uuid);
@@ -92,10 +101,12 @@ class RequestEventController extends Controller
         return Inertia::render('Projects/Requests/Show', [
             'organization' => [
                 'id' => $project->organization->id,
+                'uuid' => $project->organization->uuid,
                 'name' => $project->organization->name,
             ],
             'project' => [
                 'id' => $project->id,
+                'uuid' => $project->uuid,
                 'name' => $project->name,
             ],
             'event' => $event,
