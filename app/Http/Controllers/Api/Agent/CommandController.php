@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api\Agent;
 use App\Actions\Telemetry\StoreCommandEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Telemetry\StoreCommandEventRequest;
+use App\Models\AgentToken;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 
@@ -23,26 +24,14 @@ class CommandController extends Controller
      */
     public function store(StoreCommandEventRequest $request): JsonResponse
     {
+        $token = $request->attributes->get('agent_token');
+
+        if (! $token instanceof AgentToken) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
         $validated = $request->validated();
-
-        // Get the agent token and resolve the project
-        $token = $this->getAgentToken($request);
-
-        if (! $token) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid or missing agent token.',
-            ], 401);
-        }
-
         $project = $token->project;
-
-        if (! $project) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Project not found.',
-            ], 404);
-        }
 
         try {
             Log::info('Command event received', [
@@ -70,25 +59,5 @@ class CommandController extends Controller
                 'message' => 'Failed to store command event.',
             ], 500);
         }
-    }
-
-    /**
-     * Get the agent token from the request.
-     */
-    protected function getAgentToken($request): ?\App\Models\AgentToken
-    {
-        $tokenValue = $request->input('token')
-            ?? $request->header('X-Agent-Token')
-            ?? $request->bearerToken();
-
-        if (! $tokenValue) {
-            return null;
-        }
-
-        $tokenHash = hash('sha256', $tokenValue);
-
-        return \App\Models\AgentToken::where('token_hash', $tokenHash)
-            ->whereNull('revoked_at')
-            ->first();
     }
 }

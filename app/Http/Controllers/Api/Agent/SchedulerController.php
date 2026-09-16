@@ -28,25 +28,14 @@ class SchedulerController extends Controller
      */
     public function storeTask(StoreSchedulerTaskRequest $request): JsonResponse
     {
+        $token = $request->attributes->get('agent_token');
+
+        if (! $token instanceof AgentToken) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
         $validated = $request->validated();
-
-        $token = $this->getAgentToken($request);
-
-        if (! $token) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid or missing agent token.',
-            ], 401);
-        }
-
         $project = $token->project;
-
-        if (! $project) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Project not found.',
-            ], 404);
-        }
 
         try {
             Log::debug('Scheduler task received', [
@@ -80,25 +69,14 @@ class SchedulerController extends Controller
      */
     public function storeExecution(StoreSchedulerExecutionRequest $request): JsonResponse
     {
+        $token = $request->attributes->get('agent_token');
+
+        if (! $token instanceof AgentToken) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
         $validated = $request->validated();
-
-        $token = $this->getAgentToken($request);
-
-        if (! $token) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid or missing agent token.',
-            ], 401);
-        }
-
         $project = $token->project;
-
-        if (! $project) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Project not found.',
-            ], 404);
-        }
 
         try {
             Log::debug('Scheduler execution received', [
@@ -126,25 +104,5 @@ class SchedulerController extends Controller
                 'message' => 'Failed to store scheduler execution.',
             ], 500);
         }
-    }
-
-    /**
-     * Get the agent token from the request.
-     */
-    protected function getAgentToken(Request $request): ?AgentToken
-    {
-        $tokenValue = $request->input('token')
-            ?? $request->header('X-Agent-Token')
-            ?? $request->bearerToken();
-
-        if (! $tokenValue) {
-            return null;
-        }
-
-        $tokenHash = hash('sha256', $tokenValue);
-
-        return AgentToken::where('token_hash', $tokenHash)
-            ->whereNull('revoked_at')
-            ->first();
     }
 }

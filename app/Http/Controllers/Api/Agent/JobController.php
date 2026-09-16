@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api\Agent;
 use App\Actions\Telemetry\StoreJobEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Telemetry\StoreJobEventRequest;
+use App\Models\AgentToken;
 use App\Models\Project;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
@@ -33,29 +34,17 @@ class JobController extends Controller
      */
     public function store(StoreJobEventRequest $request): JsonResponse
     {
-        $validated = $request->validated();
+        $token = $request->attributes->get('agent_token');
 
-        // Get the agent token and resolve the project
-        $token = $this->getAgentToken($request);
-
-        if (! $token) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid or missing agent token.',
-            ], 401);
+        if (! $token instanceof AgentToken) {
+            return response()->json(['error' => 'Unauthorized'], 401);
         }
 
+        $validated = $request->validated();
         $project = $token->project;
 
-        if (! $project) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Project not found.',
-            ], 404);
-        }
-
         try {
-            \Illuminate\Support\Facades\Log::info('Job event received', [
+            Log::info('Job event received', [
                 'project_id' => $project->id,
                 'event_type' => $validated['event_type'] ?? 'unknown',
                 'job_name' => $validated['job_name'] ?? 'unknown',
@@ -80,26 +69,5 @@ class JobController extends Controller
                 'message' => 'Failed to store job event.',
             ], 500);
         }
-    }
-
-    /**
-     * Get the agent token from the request.
-     */
-    protected function getAgentToken($request): ?\App\Models\AgentToken
-    {
-        $tokenValue = $request->input('token')
-            ?? $request->header('X-Agent-Token')
-            ?? $request->bearerToken();
-
-        if (! $tokenValue) {
-            return null;
-        }
-
-        // Look up by hashed token value (AgentToken stores hash, not raw token)
-        $tokenHash = hash('sha256', $tokenValue);
-
-        return \App\Models\AgentToken::where('token_hash', $tokenHash)
-            ->whereNull('revoked_at')
-            ->first();
     }
 }

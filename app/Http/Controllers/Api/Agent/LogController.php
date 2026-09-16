@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Agent;
 use App\Actions\Telemetry\StoreLogEvent;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Telemetry\StoreLogEventRequest;
+use App\Models\AgentToken;
 use Illuminate\Http\JsonResponse;
 
 class LogController extends Controller
@@ -20,22 +21,13 @@ class LogController extends Controller
      */
     public function store(StoreLogEventRequest $request): JsonResponse
     {
-        // Get agent token and resolve project
-        $agentToken = $this->getAgentToken();
-        if (!$agentToken) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Invalid or missing agent token.',
-            ], 401);
+        $token = $request->attributes->get('agent_token');
+
+        if (! $token instanceof AgentToken) {
+            return response()->json(['error' => 'Unauthorized'], 401);
         }
 
-        $project = $agentToken->project;
-        if (!$project) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Project not found for this token.',
-            ], 404);
-        }
+        $project = $token->project;
 
         try {
             $data = $request->validated();
@@ -57,43 +49,5 @@ class LogController extends Controller
                 'message' => 'Failed to store log event.',
             ], 500);
         }
-    }
-
-    /**
-     * Get the agent token from the request.
-     */
-    protected function getAgentToken(): ?\App\Models\AgentToken
-    {
-        $token = $this->getTokenFromRequest();
-        if (!$token) {
-            return null;
-        }
-
-        // Look up by hashed token value (AgentToken stores hash, not raw token)
-        $tokenHash = hash('sha256', $token);
-
-        return \App\Models\AgentToken::where('token_hash', $tokenHash)
-            ->whereNull('revoked_at')
-            ->first();
-    }
-
-    /**
-     * Extract the token from the Authorization header.
-     */
-    protected function getTokenFromRequest(): ?string
-    {
-        $header = request()->header('Authorization', '');
-        if (str_starts_with($header, 'Bearer ')) {
-            return substr($header, 7);
-        }
-
-        // Also check X-Agent-Token header
-        $header = request()->header('X-Agent-Token', '');
-        if ($header) {
-            return $header;
-        }
-
-        // Fallback to query parameter for testing
-        return request()->query('token', request()->input('token'));
     }
 }
