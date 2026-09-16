@@ -87,10 +87,12 @@ class LogEventController extends Controller
         return Inertia::render('Projects/Logs/Index', [
             'organization' => [
                 'id' => $project->organization->id,
+                'uuid' => $project->organization->uuid,
                 'name' => $project->organization->name,
             ],
             'project' => [
                 'id' => $project->id,
+                'uuid' => $project->uuid,
                 'name' => $project->name,
             ],
             'logs' => $logs->items(),
@@ -138,10 +140,12 @@ class LogEventController extends Controller
         return Inertia::render('Projects/Logs/Show', [
             'organization' => [
                 'id' => $project->organization->id,
+                'uuid' => $project->organization->uuid,
                 'name' => $project->organization->name,
             ],
             'project' => [
                 'id' => $project->id,
+                'uuid' => $project->uuid,
                 'name' => $project->name,
             ],
             'log' => $log,

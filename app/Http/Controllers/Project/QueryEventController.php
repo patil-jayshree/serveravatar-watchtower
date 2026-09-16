@@ -71,10 +71,12 @@ class QueryEventController extends Controller
         return Inertia::render('Projects/Queries/Index', [
             'organization' => [
                 'id' => $project->organization->id,
+                'uuid' => $project->organization->uuid,
                 'name' => $project->organization->name,
             ],
             'project' => [
                 'id' => $project->id,
+                'uuid' => $project->uuid,
                 'name' => $project->name,
             ],
             'queries' => $queries->items(),
@@ -104,10 +106,12 @@ class QueryEventController extends Controller
         return Inertia::render('Projects/Queries/Show', [
             'organization' => [
                 'id' => $project->organization->id,
+                'uuid' => $project->organization->uuid,
                 'name' => $project->organization->name,
             ],
             'project' => [
                 'id' => $project->id,
+                'uuid' => $project->uuid,
                 'name' => $project->name,
             ],
             'query' => $queryEvent,

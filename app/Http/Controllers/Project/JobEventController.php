@@ -87,10 +87,12 @@ class JobEventController extends Controller
         return Inertia::render('Projects/Jobs/Index', [
             'organization' => [
                 'id' => $project->organization->id,
+                'uuid' => $project->organization->uuid,
                 'name' => $project->organization->name,
             ],
             'project' => [
                 'id' => $project->id,
+                'uuid' => $project->uuid,
                 'name' => $project->name,
             ],
             'jobs' => $jobs->items(),
@@ -123,10 +125,12 @@ class JobEventController extends Controller
         return Inertia::render('Projects/Jobs/Show', [
             'organization' => [
                 'id' => $project->organization->id,
+                'uuid' => $project->organization->uuid,
                 'name' => $project->organization->name,
             ],
             'project' => [
                 'id' => $project->id,
+                'uuid' => $project->uuid,
                 'name' => $project->name,
             ],
             'job' => $job,

@@ -72,10 +72,12 @@ class SchedulerController extends Controller
         return Inertia::render('Projects/Scheduler/Index', [
             'organization' => [
                 'id' => $organization->id,
+                'uuid' => $organization->uuid,
                 'name' => $organization->name,
             ],
             'project' => [
                 'id' => $project->id,
+                'uuid' => $project->uuid,
                 'name' => $project->name,
             ],
             'tasks' => $tasks->items(),
@@ -163,10 +165,12 @@ class SchedulerController extends Controller
         return Inertia::render('Projects/Scheduler/Show', [
             'organization' => [
                 'id' => $organization->id,
+                'uuid' => $organization->uuid,
                 'name' => $organization->name,
             ],
             'project' => [
                 'id' => $project->id,
+                'uuid' => $project->uuid,
                 'name' => $project->name,
             ],
             'task' => $task,

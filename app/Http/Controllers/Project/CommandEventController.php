@@ -85,10 +85,12 @@ class CommandEventController extends Controller
         return Inertia::render('Projects/Commands/Index', [
             'organization' => [
                 'id' => $organization->id,
+                'uuid' => $organization->uuid,
                 'name' => $organization->name,
             ],
             'project' => [
                 'id' => $project->id,
+                'uuid' => $project->uuid,
                 'name' => $project->name,
             ],
             'commands' => $commands->items(),
@@ -148,10 +150,12 @@ class CommandEventController extends Controller
         return Inertia::render('Projects/Commands/Show', [
             'organization' => [
                 'id' => $organization->id,
+                'uuid' => $organization->uuid,
                 'name' => $organization->name,
             ],
             'project' => [
                 'id' => $project->id,
+                'uuid' => $project->uuid,
                 'name' => $project->name,
             ],
             'command' => $command,

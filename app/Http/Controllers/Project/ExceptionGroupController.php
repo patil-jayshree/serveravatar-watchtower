@@ -122,10 +122,12 @@ class ExceptionGroupController extends Controller
         return Inertia::render('Projects/Exceptions/Index', [
             'organization' => [
                 'id' => $project->organization->id,
+                'uuid' => $project->organization->uuid,
                 'name' => $project->organization->name,
             ],
             'project' => [
                 'id' => $project->id,
+                'uuid' => $project->uuid,
                 'name' => $project->name,
             ],
             'exceptions' => $groups->items(),
@@ -154,10 +156,12 @@ class ExceptionGroupController extends Controller
         return Inertia::render('Projects/Exceptions/Show', [
             'organization' => [
                 'id' => $project->organization->id,
+                'uuid' => $project->organization->uuid,
                 'name' => $project->organization->name,
             ],
             'project' => [
                 'id' => $project->id,
+                'uuid' => $project->uuid,
                 'name' => $project->name,
             ],
             'exception' => [
