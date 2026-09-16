@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import AppLayout from '@/layouts/AppLayout';
 import ConfirmModal from '@/components/ConfirmModal';
+import CodeBlock from '@/components/CodeBlock';
 import { 
     Package, Terminal, CheckCircle2, Key, Rocket, 
     AlertTriangle, Copy, Check, RefreshCw, Shield
@@ -234,16 +235,16 @@ export default function ProjectAgent() {
                                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
                                     For local development, configure a path repository in your composer.json:
                                 </p>
-                                <div className="bg-gray-900 dark:bg-slate-950 rounded-lg p-4 font-mono text-sm overflow-x-auto">
+                                <CodeBlock>
                                     <p className="text-gray-400 mb-2">// Add to your composer.json:</p>
                                     <p className="text-green-400">"repositories": [</p>
                                     <p className="text-green-400 pl-4">{'{'}&quot;type&quot;: &quot;path&quot;, &quot;url&quot;: &quot;../sa-watchtower-agent&quot;, &quot;options&quot;: {'{'}&quot;symlink&quot;: true{'}'}{'}'}</p>
                                     <p className="text-green-400">]</p>
-                                </div>
-                                <div className="bg-gray-900 dark:bg-slate-950 rounded-lg p-4 font-mono text-sm mt-3 overflow-x-auto">
+                                </CodeBlock>
+                                <CodeBlock className="mt-3">
                                     <p className="text-gray-400 mb-2">// Then run:</p>
                                     <p className="text-green-400">composer require serveravatar/watchtower-agent:*@dev --ignore-platform-req=ext-bcmath</p>
-                                </div>
+                                </CodeBlock>
                             </div>
 
                             {/* Production */}
@@ -253,9 +254,9 @@ export default function ProjectAgent() {
                                         Production
                                     </span>
                                 </div>
-                                <div className="bg-gray-900 dark:bg-slate-950 rounded-lg p-4 font-mono text-sm overflow-x-auto">
+                                <CodeBlock>
                                     <p className="text-green-400">composer require serveravatar/watchtower-agent --ignore-platform-req=ext-bcmath</p>
-                                </div>
+                                </CodeBlock>
                             </div>
                         </div>
 
@@ -273,18 +274,18 @@ export default function ProjectAgent() {
                                 </div>
                             </div>
 
-                            <div className="bg-gray-900 dark:bg-slate-950 rounded-lg p-4 font-mono text-sm mb-3 overflow-x-auto">
+                            <CodeBlock className="mb-3">
                                 <p className="text-gray-400 mb-2">// Interactive:</p>
                                 <p className="text-green-400">php artisan watchtower:install</p>
-                            </div>
+                            </CodeBlock>
 
-                            <div className="bg-gray-900 dark:bg-slate-950 rounded-lg p-4 font-mono text-sm mb-4 overflow-x-auto">
+                            <CodeBlock className="mb-4">
                                 <p className="text-gray-400 mb-2">// Or with URL and token:</p>
                                 <p className="text-green-400">php artisan watchtower:install \</p>
                                 <p className="text-green-400 pl-4">--url=&quot;YOUR_APP_URL&quot; \</p>
                                 <p className="text-green-400 pl-4">--token=&quot;your-agent-token&quot; \</p>
                                 <p className="text-green-400 pl-4">--no-interaction</p>
-                            </div>
+                            </CodeBlock>
 
                             <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                                 <div className="flex items-start gap-3">
@@ -314,9 +315,9 @@ export default function ProjectAgent() {
                                 </div>
                             </div>
 
-                            <div className="bg-gray-900 dark:bg-slate-950 rounded-lg p-4 font-mono text-sm overflow-x-auto">
+                            <CodeBlock>
                                 <p className="text-green-400">php artisan watchtower:status</p>
-                            </div>
+                            </CodeBlock>
 
                             <div className="mt-6 border-t border-gray-200 dark:border-gray-700 pt-6">
                                 <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">What it shows:</h3>
@@ -423,9 +424,9 @@ export default function ProjectAgent() {
                                 </div>
                             </div>
 
-                            <div className="bg-gray-900 dark:bg-slate-950 rounded-lg p-4 font-mono text-sm overflow-x-auto">
+                            <CodeBlock>
                                 <p className="text-green-400">php artisan watchtower:run</p>
-                            </div>
+                            </CodeBlock>
 
                             <div className="mt-4 p-4 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
                                 <div className="flex items-start gap-3">
