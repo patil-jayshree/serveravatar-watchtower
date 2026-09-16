@@ -95,11 +95,11 @@ class Project extends Model
     }
 
     /**
-     * Get the agent token for this project.
+     * Get the active agent token for this project.
      */
     public function agentToken(): HasOne
     {
-        return $this->hasOne(AgentToken::class);
+        return $this->hasOne(AgentToken::class)->where('status', \App\Enums\Agent\AgentTokenStatus::Active);
     }
 
     /**

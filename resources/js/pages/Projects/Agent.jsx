@@ -1,20 +1,100 @@
 import { useState } from 'react';
-import { Link, usePage, router } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import AppLayout from '@/layouts/AppLayout';
+import ConfirmModal from '@/components/ConfirmModal';
 import { 
     Package, Terminal, CheckCircle2, Key, Rocket, 
     AlertTriangle, Copy, Check, RefreshCw, Shield
 } from 'lucide-react';
 
 export default function ProjectAgent() {
-    const { project, organization, agentToken, isConnected } = usePage().props;
+    const { project, organization, agentToken: initialToken, isConnected, justGenerated: initialJustGenerated, rawToken: initialRawToken } = usePage().props;
+    
+    // Use local state for token — updated via fetch (no page reload)
+    const [agentToken, setAgentToken] = useState(initialToken);
+    const [justGenerated, setJustGenerated] = useState(initialJustGenerated);
+    const [rawToken, setRawToken] = useState(initialRawToken);
     const [copied, setCopied] = useState(null);
     const [loading, setLoading] = useState(false);
+
+    // Confirmation modal state
+    const [showModal, setShowModal] = useState(false);
+    const [modalAction, setModalAction] = useState(null); // 'regenerate' | 'revoke'
 
     const copyToClipboard = (text, key) => {
         navigator.clipboard.writeText(text);
         setCopied(key);
         setTimeout(() => setCopied(null), 2000);
+    };
+
+    const handleGenerate = async () => {
+        setLoading(true);
+        try {
+            const res = await fetch(`/organizations/${organization?.id}/projects/${project?.uuid}/agent/generate`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content,
+                    'Accept': 'application/json',
+                },
+            });
+            const data = await res.json();
+            setRawToken(data.token);
+            setAgentToken(data.token);
+            setJustGenerated(true);
+        } catch (err) {
+            alert('Failed to generate token');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const openRegenerateModal = () => {
+        setModalAction('regenerate');
+        setShowModal(true);
+    };
+
+    const openRevokeModal = () => {
+        setModalAction('revoke');
+        setShowModal(true);
+    };
+
+    const handleModalConfirm = async () => {
+        setShowModal(false);
+        setLoading(true);
+        try {
+            if (modalAction === 'regenerate') {
+                const res = await fetch(`/organizations/${organization?.id}/projects/${project?.uuid}/agent/regenerate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content,
+                        'Accept': 'application/json',
+                    },
+                });
+                const data = await res.json();
+                setRawToken(data.token);
+                setAgentToken(data.token);
+                setJustGenerated(true);
+            } else if (modalAction === 'revoke') {
+                await fetch(`/organizations/${organization?.id}/projects/${project?.uuid}/agent`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content,
+                        'Accept': 'application/json',
+                    },
+                });
+                setAgentToken(null);
+                setRawToken(null);
+                setJustGenerated(false);
+            }
+        } catch (err) {
+            alert('Failed to process request');
+        } finally {
+            setLoading(false);
+            setModalAction(null);
+        }
     };
 
     const steps = [
@@ -286,44 +366,43 @@ export default function ProjectAgent() {
 
                             {!agentToken ? (
                                 <button
-                                    onClick={() => router.post(`/organizations/${organization?.id}/projects/${project?.uuid}/agent/generate`)}
-                                    className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-medium rounded-lg transition-colors"
+                                    onClick={handleGenerate}
+                                    disabled={loading}
+                                    className="inline-flex items-center gap-2 px-4 py-2 bg-cyan-600 hover:bg-cyan-700 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
                                 >
                                     <Key className="w-4 h-4" />
-                                    Generate Token
+                                    {loading ? 'Generating...' : 'Generate Token'}
                                 </button>
                             ) : (
                                 <div className="space-y-4">
-                                    <div className="bg-gray-900 dark:bg-slate-950 rounded-lg p-4 font-mono text-sm overflow-x-auto">
-                                        <p className="text-green-400 break-all">{agentToken}</p>
+                                    <div className="bg-gray-900 dark:bg-slate-950 rounded-lg p-4 pr-12 font-mono text-sm overflow-hidden relative">
+                                        <p className="text-green-400 break-all pr-8">{agentToken}</p>
+                                        <button
+                                            onClick={() => copyToClipboard(agentToken, 'token')}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-white rounded-md hover:bg-gray-700 transition-colors"
+                                            title="Copy token"
+                                        >
+                                            {copied === 'token' ? (
+                                                <Check className="w-4 h-4 text-emerald-400" />
+                                            ) : (
+                                                <Copy className="w-4 h-4" />
+                                            )}
+                                        </button>
                                     </div>
-                                    <button
-                                        onClick={() => copyToClipboard(agentToken, 'token')}
-                                        className="inline-flex items-center gap-2 px-3 py-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-                                    >
-                                        {copied === 'token' ? (
-                                            <Check className="w-4 h-4 text-emerald-500" />
-                                        ) : (
-                                            <Copy className="w-4 h-4" />
-                                        )}
-                                        {copied === 'token' ? 'Copied!' : 'Copy token'}
-                                    </button>
 
                                     <div className="flex gap-3">
                                         <button
-                                            onClick={() => router.post(`/organizations/${organization?.id}/projects/${project?.uuid}/agent/regenerate`)}
-                                            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg transition-colors"
+                                            onClick={openRegenerateModal}
+                                            disabled={loading}
+                                            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-slate-700 hover:bg-gray-200 dark:hover:bg-slate-600 disabled:opacity-50 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-lg transition-colors"
                                         >
-                                            <RefreshCw className="w-4 h-4" />
+                                            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                                             Regenerate Token
                                         </button>
                                         <button
-                                            onClick={() => {
-                                                if (confirm('Are you sure? This will disconnect the current agent.')) {
-                                                    router.delete(`/organizations/${organization?.id}/projects/${project?.uuid}/agent`);
-                                                }
-                                            }}
-                                            className="inline-flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 text-red-700 dark:text-red-300 text-sm font-medium rounded-lg transition-colors"
+                                            onClick={openRevokeModal}
+                                            disabled={loading}
+                                            className="inline-flex items-center gap-2 px-4 py-2 bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 disabled:opacity-50 text-red-700 dark:text-red-300 text-sm font-medium rounded-lg transition-colors"
                                         >
                                             Revoke Token
                                         </button>
@@ -363,6 +442,22 @@ export default function ProjectAgent() {
                     </div>
                 </div>
             </div>
+
+            {/* Confirmation Modal */}
+            <ConfirmModal
+                isOpen={showModal}
+                onClose={() => { setShowModal(false); setModalAction(null); }}
+                onConfirm={handleModalConfirm}
+                title={modalAction === 'regenerate' ? 'Regenerate Token?' : 'Revoke Token?'}
+                message={
+                    modalAction === 'regenerate'
+                        ? 'This will revoke the current token and generate a new one. Your agent will need to be updated with the new token.'
+                        : 'This will disconnect the current agent and revoke the token. You will need to generate a new token to reconnect.'
+                }
+                confirmText={modalAction === 'regenerate' ? 'Regenerate' : 'Revoke'}
+                confirmClass={modalAction === 'regenerate' ? 'bg-cyan-600 hover:bg-cyan-700' : 'bg-red-600 hover:bg-red-700'}
+                isLoading={loading}
+            />
         </AppLayout>
     );
 }
